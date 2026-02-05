@@ -5,27 +5,27 @@ const floatingImages = [
   {
     src: "/images/cta-tablet.jpg",
     alt: "Tablet with education app",
-    className: "absolute left-4 top-16 h-40 w-32 rounded-xl md:left-12 md:h-52 md:w-44",
+    className: "absolute left-4 top-16 h-40 w-32 rounded-xl md:left-12 md:h-80 md:w-80",
   },
   {
     src: "/images/calculator.jpg",
     alt: "Calculator",
-    className: "absolute right-4 top-8 h-32 w-32 rounded-xl md:right-16 md:h-44 md:w-44",
+    className: "absolute right-4 top-8 h-32 w-32 rounded-xl md:right-16 md:h-80 md:w-80",
   },
   {
     src: "/images/laptop-calendar.jpg",
     alt: "Laptop with calendar",
-    className: "absolute bottom-24 left-8 h-36 w-48 rounded-xl md:bottom-32 md:left-16 md:h-44 md:w-56",
+    className: "absolute bottom-24 left-8 h-36 w-48 rounded-xl md:bottom-32 md:left-16 md:h-80 md:w-80",
   },
   {
     src: "/images/tablet-app.jpg",
     alt: "Tablet with app interface",
-    className: "absolute bottom-48 left-1/2 h-40 w-32 -translate-x-1/2 rounded-xl md:h-52 md:w-40 hidden md:block",
+    className: "absolute bottom-48 left-1/2 h-40 w-32 -translate-x-1/2 rounded-xl md:h-52 md:w-60 hidden md:block",
   },
   {
     src: "/images/group-meeting.jpg",
     alt: "Students in group meeting",
-    className: "absolute bottom-24 right-8 h-36 w-48 rounded-xl md:bottom-32 md:right-16 md:h-44 md:w-56",
+    className: "absolute bottom-24 right-8 h-36 w-48 rounded-xl md:bottom-32 md:right-16 md:h-80 md:w-80",
   },
 ]
 
