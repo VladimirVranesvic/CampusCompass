@@ -84,8 +84,21 @@ function parseDate(dateStr: string): string {
   return clean
 }
 
+  
 export function generateUACTimelineFromCSV(userData: any) {
   const rounds = parseUACCSV()
+  const today = new Date()
+  today.setHours(0, 0, 0, 0) // Reset to start of day for accurate comparison
+  
+  // Find the next upcoming application deadline
+  let nextDeadline = '2026-12-31' // Default fallback
+  for (const round of rounds) {
+    const applyByDate = new Date(parseDate(round.applyBy))
+    if (applyByDate > today) {
+      nextDeadline = round.applyBy
+      break // Found the next upcoming deadline
+    }
+  }
   
   // Filter for main rounds (2026 dates, Year 12 students)
   const mainRounds = rounds.filter(r => 
@@ -93,34 +106,33 @@ export function generateUACTimelineFromCSV(userData: any) {
     r.notes.includes('Main offer rounds for 2025 Year 12 students')
   )
   
-  // Get important dates
-  const septemberRound2 = rounds.find(r => r.round === 'September Round 2')
-  const decemberRound2 = rounds.find(r => r.round === 'December Round 2')
-  const januaryRound1 = rounds.find(r => r.round === 'January Round 1')
+  // Get the round corresponding to the next deadline
+  const nextDeadlineRound = rounds.find(r => r.applyBy === nextDeadline)
   
-  const importantDates = [
-    {
-      date: parseDate(septemberRound2?.applyBy || '2025-08-21'),
-      event: 'On-time Application Deadline (September Round 2)'
-    },
-    {
-      date: '2025-12-15', // ATAR Release (typically mid-December)
+  // Get ALL important dates (both past and upcoming)
+  const importantDates: Array<{ date: string; event: string }> = []
+  
+  // Add all main round offer dates
+  for (const round of mainRounds) {
+    importantDates.push({
+      date: parseDate(round.offersReleased),
+      event: `${round.round} Offers`
+    })
+  }
+  
+  // Add ATAR Release if it's a relevant year
+  if (mainRounds.length > 0) {
+    importantDates.push({
+      date: '2025-12-15',
       event: 'ATAR Release'
-    },
-    {
-      date: parseDate(decemberRound2?.offersReleased || '2025-12-23'),
-      event: 'December Round 2 Offers (Main Round)'
-    },
-    {
-      date: parseDate(januaryRound1?.offersReleased || '2026-01-08'),
-      event: 'January Round 1 Offers (Main Round)'
-    },
-  ]
+    })
+  }
   
-  // Format offer rounds - focus on main rounds for Year 12 students
+  // Sort by date (earliest first)
+  importantDates.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  
+  // Format ALL offer rounds (both past and upcoming)
   const offerRounds = mainRounds
-    .filter(r => r.notes.includes('Main offer rounds for 2025 Year 12 students'))
-    .slice(0, 5)
     .map((round, index) => ({
       round: index + 1,
       date: parseDate(round.offersReleased),
@@ -129,11 +141,8 @@ export function generateUACTimelineFromCSV(userData: any) {
       changePreferencesBy: parseDate(round.changePreferencesBy),
     }))
   
-  // Find application deadline (September Round 2 is typically the main deadline)
-  const applicationDeadline = septemberRound2?.applyBy || '2025-08-21'
-  
   return {
-    applicationDeadline: parseDate(applicationDeadline),
+    applicationDeadline: parseDate(nextDeadline),
     offerRounds,
     importantDates,
     allRounds: rounds.map(r => ({

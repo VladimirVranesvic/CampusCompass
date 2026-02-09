@@ -64,7 +64,7 @@ const postcodeDatabase: { [key: string]: PostcodeLocation } = {
   '2155': { postcode: '2155', latitude: -33.8000, longitude: 151.0000, suburb: 'Rouse Hill', state: 'NSW' },
   // University locations (approximate)
   '2052': { postcode: '2052', latitude: -33.8885, longitude: 151.1873, suburb: 'Camperdown', state: 'NSW' }, // University of Sydney
-  '2050': { postcode: '2050', latitude: -33.9173, longitude: 151.2313, suburb: 'Kensington', state: 'NSW' }, // UNSW
+  '2051': { postcode: '2050', latitude: -33.9173, longitude: 151.2313, suburb: 'Kensington', state: 'NSW' }, // UNSW
   '2007': { postcode: '2007', latitude: -33.8832, longitude: 151.2016, suburb: 'Ultimo', state: 'NSW' }, // UTS
   '2109': { postcode: '2109', latitude: -33.7731, longitude: 151.1127, suburb: 'Macquarie Park', state: 'NSW' }, // Macquarie University
   '2751': { postcode: '2751', latitude: -33.6094, longitude: 150.7375, suburb: 'Richmond', state: 'NSW' }, // Western Sydney University (Richmond)

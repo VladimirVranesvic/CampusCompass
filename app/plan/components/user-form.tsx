@@ -205,7 +205,7 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
                   <SelectContent>
                     <SelectItem value="Year 11">Year 11</SelectItem>
                     <SelectItem value="Year 12">Year 12</SelectItem>
-                    <SelectItem value="Gap Year">Gap Year</SelectItem>
+                    <SelectItem value="Gap Year">Post-school applicant</SelectItem>
                   </SelectContent>
                 </Select>
                 {errors.currentYear && (
