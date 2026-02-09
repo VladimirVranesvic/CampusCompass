@@ -70,22 +70,17 @@ export function CommutePlanner({ commuteData, userData }: CommutePlannerProps) {
                   </div>
                 </div>
               </div>
-
               {commute.routeDetails && (
                 <div className="pt-2 border-t">
                   <p className="text-sm font-medium mb-2">Route Breakdown</p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
                     <div>
-                      <span className="text-muted-foreground">Walk to stop: </span>
+                      <span className="text-muted-foreground">Walking: </span>
                       <span className="font-medium">{commute.routeDetails.walkingToStop} min</span>
                     </div>
                     <div>
                       <span className="text-muted-foreground">Transit: </span>
                       <span className="font-medium">{commute.routeDetails.transitTime} min</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Walk from stop: </span>
-                      <span className="font-medium">{commute.routeDetails.walkingFromStop} min</span>
                     </div>
                     <div>
                       <span className="text-muted-foreground">Transfers: </span>

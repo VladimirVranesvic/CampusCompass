@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar, Clock } from "lucide-react"
-import { format, isAfter, isBefore } from "date-fns"
+import { format, isAfter} from "date-fns"
 
 interface UACTimelineProps {
   timeline: {

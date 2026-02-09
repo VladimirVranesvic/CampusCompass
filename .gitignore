@@ -34,9 +34,6 @@ pnpm-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Generated data files
-/data/processed-stops.json
-
 # IDE
 .idea/
 .vscode/
@@ -46,10 +43,7 @@ next-env.d.ts
 
 # Big / generated data files
 /data/
-*.csv
 *.parquet
 *.json.bak
 **/exports/
-**/transxchange_1/
 **/rentalbond_lodgements_year_2025.xlsx
-node_modules

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { generateUACTimelineFromCSV } from "@/lib/data/uac-parser"
-import { calculateCommuteRoute } from "@/lib/data/route-calculator"
+import { calculateCommuteRoute } from "@/lib/data/nsw-trip-planner"
 import { getRentalDataByPostcode, loadRentalData } from "@/lib/data/rental-parser"
 
 async function calculateCommute(userData: any) {
