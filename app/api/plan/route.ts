@@ -227,7 +227,7 @@ export async function POST(request: NextRequest) {
       Promise.resolve(generateUACTimelineFromCSV(userData)),
       calculateCommute(userData),
       Promise.resolve(getRentalData(userData.postcode)),
-      Promise.resolve(checkBenefitsEligibility(userData)),
+      Promise.resolve(checkBenefitsEligibility({ ...userData, movingForStudy: userData.livingSituation === 'moving_out' })),
       Promise.resolve(calculateFees(userData)),
       Promise.resolve(generateChecklist(userData)),
     ])

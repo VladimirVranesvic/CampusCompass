@@ -24,8 +24,9 @@ const userSchema = z.object({
   
   // Living Situation
   livingSituation: z.string().min(1, "Please select living situation"),
-  householdIncome: z.string().optional(),
-  
+  householdIncome: z.string().min(1, "Please select income range"),
+  isIndigenous: z.boolean().optional(),
+
   // Preferences
   commuteMaxTime: z.string().optional(),
   budgetMax: z.string().optional(),
@@ -73,6 +74,7 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
     defaultValues: {
       targetUniversities: [],
       preferredFields: [],
+      isIndigenous: false,
     },
   })
 
@@ -106,7 +108,7 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
     } else if (step === 2) {
       isValid = await form.trigger(["currentYear", "targetUniversities"])
     } else if (step === 3) {
-      isValid = await form.trigger(["livingSituation"])
+      isValid = await form.trigger(["livingSituation", "householdIncome"])
     } else if (step === 4) {
       isValid = await form.trigger()
     }
@@ -279,6 +281,7 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
                   <SelectContent>
                     <SelectItem value="home">Living at home</SelectItem>
                     <SelectItem value="renting">Renting</SelectItem>
+                    <SelectItem value="moving_out">Moving out / relocating for study</SelectItem>
                     <SelectItem value="on-campus">On-campus accommodation</SelectItem>
                     <SelectItem value="unsure">Not sure yet</SelectItem>
                   </SelectContent>
@@ -291,7 +294,7 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
               </div>
 
               <div>
-                <Label htmlFor="householdIncome">Household Income (Optional)</Label>
+                <Label htmlFor="householdIncome">Household Income *</Label>
                 <Select
                   onValueChange={(value) => setValue("householdIncome", value)}
                   defaultValue={watch("householdIncome")}
@@ -307,6 +310,30 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
                     <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Helps us show eligibility for Youth Allowance and Rent Assistance.
+                </p>
+                {errors.householdIncome && (
+                  <p className="mt-1 text-sm text-destructive">
+                    {errors.householdIncome.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="isIndigenous"
+                  checked={watch("isIndigenous") ?? false}
+                  onCheckedChange={(checked) =>
+                    setValue("isIndigenous", checked === true)
+                  }
+                />
+                <label
+                  htmlFor="isIndigenous"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  I am Aboriginal or Torres Strait Islander (helps us show ABSTUDY eligibility)
+                </label>
               </div>
             </div>
           )}
