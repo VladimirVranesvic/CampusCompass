@@ -21,7 +21,7 @@ export async function getPostcodeCoordinates(
   }
 
   try {
-    // Convert postcode to integer for query
+    // Convert postcode to integer for query (database stores as int8)
     const postcodeInt = parseInt(postcode, 10)
     
     if (isNaN(postcodeInt)) {
@@ -32,8 +32,9 @@ export async function getPostcodeCoordinates(
     const { data, error } = await supabase
       .from('PostCodes')
       .select('postcode, lat, long, locality, state')
-      .eq('postcode', postcodeInt)  // Query as integer, not string
-      .maybeSingle()
+      .eq('postcode', postcodeInt)
+      .limit(1)        // Get just the first match
+      .single()        // Convert array to single object
 
     if (error) {
       console.error('Error fetching postcode:', error)
@@ -43,7 +44,7 @@ export async function getPostcodeCoordinates(
     if (data) {
       // Map database columns to our interface
       const result: PostcodeLocation = {
-        postcode: String(data.postcode),  // Convert back to string
+        postcode: String(data.postcode),
         latitude: data.lat,
         longitude: data.long,
         suburb: data.locality,
@@ -55,7 +56,6 @@ export async function getPostcodeCoordinates(
       return result
     }
 
-    console.log(`Postcode ${postcode} not found in database`)
     return null
   } catch (error) {
     console.error('Error fetching postcode:', error)
