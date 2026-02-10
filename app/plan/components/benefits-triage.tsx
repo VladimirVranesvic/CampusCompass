@@ -40,14 +40,15 @@ export function BenefitsTriage({ benefits, userData }: BenefitsTriageProps) {
             </h3>
             <div className="space-y-4">
               {eligibleBenefits.map((benefit, index) => (
-                <div key={index} className="p-4 rounded-lg border border-lime/20 bg-lime/5">
+                <div key={index} className="p-4 rounded-lg border-2 border-lime/40 bg-lime/15">
                   <div className="flex items-start justify-between mb-2">
                     <h4 className="font-semibold">{benefit.name}</h4>
-                    <CheckCircle2 className="h-5 w-5 text-lime shrink-0" />
+                    <CheckCircle2 className="h-6 w-6 text-lime shrink-0" />
                   </div>
                   {benefit.estimatedAmount && (
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Estimated: {benefit.estimatedAmount}
+                    <p className="text-base font-medium mb-3">
+                      <span className="text-foreground">Estimated: </span>
+                      <span className="font-bold text-foreground">{benefit.estimatedAmount}</span>
                     </p>
                   )}
                   <div>
@@ -55,7 +56,7 @@ export function BenefitsTriage({ benefits, userData }: BenefitsTriageProps) {
                     <ul className="space-y-1">
                       {benefit.nextSteps.map((step, stepIndex) => (
                         <li key={stepIndex} className="text-sm text-muted-foreground flex items-start gap-2">
-                          <span className="text-lime mt-1">•</span>
+                          <span className="text-lime mt-1 font-bold">•</span>
                           <span>{step}</span>
                         </li>
                       ))}
@@ -64,7 +65,7 @@ export function BenefitsTriage({ benefits, userData }: BenefitsTriageProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="mt-3"
+                    className="mt-3 border-lime bg-lime/10 text-foreground hover:bg-lime-hover hover:border-lime"
                     onClick={() =>
                       window.open(benefit.learnMoreUrl ?? "https://www.servicesaustralia.gov.au", "_blank")
                     }
