@@ -222,6 +222,8 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
                 <div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-2">
                   {universities.map((uni) => {
                     const isSelected = watchedUniversities.includes(uni)
+                    const uniIndex = watchedUniversities.indexOf(uni)
+                    const isPrimary = uniIndex === 0
                     return (
                       <div key={uni} className="space-y-2">
                         <div className="flex items-center space-x-2">
@@ -232,9 +234,19 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
                           />
                           <label
                             htmlFor={uni}
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex items-center gap-2"
                           >
-                            {uni}
+                            <span>{uni}</span>
+                            {isPrimary && (
+                              <span className="text-xs px-1.5 py-0.5 rounded bg-lime/20 text-lime font-medium">
+                                1st
+                              </span>
+                            )}
+                            {isSelected && !isPrimary && (
+                              <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                                #{uniIndex + 1}
+                              </span>
+                            )}
                           </label>
                         </div>
                         {/* Show preferences for selected universities */}
