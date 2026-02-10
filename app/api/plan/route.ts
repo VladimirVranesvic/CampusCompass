@@ -40,19 +40,9 @@ async function calculateCommute(userData: any) {
   
   return routes
 }
-
 function getRentalData(postcode: string) {
-  try {
-    const allData = loadRentalData('public/data/rentalbond_lodgements_year_2025.xlsx')
-    if (allData.length === 0) {
-      // Fallback to mock data if file not found or empty
-      return getMockRentalData(postcode)
-    }
-    return getRentalDataByPostcode(allData, postcode)
-  } catch (error) {
-    console.error('Error loading rental data:', error)
-    return getMockRentalData(postcode)
-  }
+  // Using mock data until rental data is moved to Supabase or CSV
+  return getMockRentalData(postcode)
 }
 
 function getMockRentalData(postcode: string) {
