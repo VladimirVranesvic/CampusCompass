@@ -1,11 +1,11 @@
-faculty,annualFee,notes
-Engineering,10650,Band 1 CSP
-Science,10650,Band 1 CSP
-Business,10650,Band 1 CSP
-Arts & Humanities,7260,Band 1 CSP
-Medicine,12630,Band 1 CSP
-Law,12630,Band 1 CSP
-Education,7260,Band 1 CSP
-IT & Computing,10650,Band 1 CSP
-Health Sciences,10650,Band 1 CSP
-Creative Arts,7260,Band 1 CSP
+faculty,annualFee,courseYears,notes
+Engineering,10650,4,Band 1 CSP
+Science,10650,3,Band 1 CSP
+Business,10650,3,Band 1 CSP
+Arts & Humanities,7260,3,Band 1 CSP
+Medicine,12630,6,Band 1 CSP
+Law,12630,5,Band 1 CSP
+Education,7260,4,Band 1 CSP
+IT & Computing,10650,3,Band 1 CSP
+Health Sciences,10650,3,Band 1 CSP
+Creative Arts,7260,3,Band 1 CSP

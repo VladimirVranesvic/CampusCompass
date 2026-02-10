@@ -3,7 +3,7 @@ import { generateUACTimelineFromCSV } from "@/lib/data/uac-parser"
 import { calculateCommuteRoute } from "@/lib/data/nsw-trip-planner"
 import { getRentalDataByPostcode, loadRentalData } from "@/lib/data/rental-parser"
 import { parseBenefitsCSV, type BenefitDefinition } from "@/lib/data/benefits-parser"
-import { getAnnualFeeForUni } from "@/lib/data/fees-parser"
+import { getFeeInfoForUni } from "@/lib/data/fees-parser"
 
 async function calculateCommute(userData: any) {
   const universities = userData.targetUniversities || []
@@ -117,16 +117,21 @@ function checkBenefitsEligibility(userData: any) {
 }
 
 const DEFAULT_ANNUAL_FEE = 15000 // Fallback when no CSV data (AUD)
+const DEFAULT_COURSE_YEARS = 3
 
 function calculateFees(userData: any) {
   const universities: string[] = userData.targetUniversities || []
   const preferredFields: string[] = userData.preferredFields || []
 
   const byUniversity = universities.map((uni: string) => {
-    const fee = getAnnualFeeForUni(uni, preferredFields)
+    const info = getFeeInfoForUni(uni, preferredFields)
+    const annualFee = info?.annualFee ?? DEFAULT_ANNUAL_FEE
+    const courseYears = info?.courseYears ?? DEFAULT_COURSE_YEARS
     return {
       university: uni,
-      estimatedAnnualFee: fee ?? DEFAULT_ANNUAL_FEE,
+      estimatedAnnualFee: annualFee,
+      courseYears,
+      estimatedTotalFee: annualFee * courseYears,
     }
   })
 
@@ -137,9 +142,16 @@ function calculateFees(userData: any) {
         )
       : DEFAULT_ANNUAL_FEE
 
+  const avgCourseYears =
+    byUniversity.length > 0
+      ? Math.round(
+          byUniversity.reduce((a, u) => a + u.courseYears, 0) / byUniversity.length
+        )
+      : DEFAULT_COURSE_YEARS
+
   return {
     estimatedAnnualFee,
-    estimatedTotalFee: estimatedAnnualFee * 3,
+    estimatedTotalFee: estimatedAnnualFee * avgCourseYears,
     hecsHelp: {
       available: true,
       repaymentThreshold: 51950, // 2024-25 threshold

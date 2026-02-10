@@ -19,6 +19,8 @@ interface FeesCalculatorProps {
     byUniversity: Array<{
       university: string
       estimatedAnnualFee: number
+      courseYears: number
+      estimatedTotalFee: number
     }>
   }
   userData: any
@@ -47,7 +49,7 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
           <div className="p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
               <GraduationCap className="h-4 w-4 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Estimated Total (3 years)</p>
+              <p className="text-sm text-muted-foreground">Estimated Total (course duration)</p>
             </div>
             <p className="text-2xl font-bold">${fees.estimatedTotalFee.toLocaleString()}</p>
           </div>
@@ -96,10 +98,20 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
                 key={index}
                 className="flex items-center justify-between p-3 rounded-lg border"
               >
-                <p className="font-medium">{uni.university}</p>
-                <p className="font-semibold">
-                  ${uni.estimatedAnnualFee.toLocaleString()}/year
-                </p>
+                <div>
+                  <p className="font-medium">{uni.university}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {uni.courseYears} {uni.courseYears === 1 ? "year" : "years"}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="font-semibold">
+                    ${uni.estimatedAnnualFee.toLocaleString()}/year
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Total: ${uni.estimatedTotalFee.toLocaleString()}
+                  </p>
+                </div>
               </div>
             ))}
           </div>

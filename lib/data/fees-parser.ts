@@ -4,6 +4,7 @@ import path from 'path'
 export interface FacultyFee {
   faculty: string
   annualFee: number
+  courseYears: number
   notes?: string
 }
 
@@ -26,7 +27,7 @@ export function getUniSlug(uniName: string): string | null {
 
 /**
  * Parse a single university's fees CSV from public/data/fees/<slug>.csv.
- * Columns: faculty, annualFee, notes (optional).
+ * Columns: faculty, annualFee, courseYears, notes (optional).
  * Returns empty array if file is missing or invalid.
  */
 export function parseFeesCSV(uniSlug: string): FacultyFee[] {
@@ -62,26 +63,30 @@ export function parseFeesCSV(uniSlug: string): FacultyFee[] {
 
     const faculty = values[0]?.trim()
     const annualFeeRaw = values[1]?.trim()
-    const notes = values[2]?.trim()
-    if (!faculty || annualFeeRaw === undefined) continue
+    const courseYearsRaw = values[2]?.trim()
+    const notes = values[3]?.trim()
+    if (!faculty || annualFeeRaw === undefined || courseYearsRaw === undefined) continue
 
     const annualFee = parseInt(annualFeeRaw, 10)
     if (Number.isNaN(annualFee)) continue
 
-    fees.push({ faculty, annualFee, notes: notes || undefined })
+    const courseYears = parseInt(courseYearsRaw, 10)
+    if (Number.isNaN(courseYears) || courseYears <= 0) continue
+
+    fees.push({ faculty, annualFee, courseYears, notes: notes || undefined })
   }
   return fees
 }
 
 /**
- * Get the annual fee for one university given optional preferred fields.
+ * Get annual fee + course length for one university given optional preferred fields.
  * If preferredFields is provided and a matching faculty exists, returns that fee (or average of matches).
  * Otherwise returns the average of all faculties in the CSV, or null if no data.
  */
-export function getAnnualFeeForUni(
+export function getFeeInfoForUni(
   uniName: string,
   preferredFields?: string[]
-): number | null {
+): { annualFee: number; courseYears: number } | null {
   const slug = getUniSlug(uniName)
   if (!slug) return null
 
@@ -93,11 +98,22 @@ export function getAnnualFeeForUni(
       preferredFields.some((f) => f.trim().toLowerCase() === r.faculty.trim().toLowerCase())
     )
     if (matched.length > 0) {
-      const sum = matched.reduce((acc, r) => acc + r.annualFee, 0)
-      return Math.round(sum / matched.length)
+      const annualFee = Math.round(matched.reduce((acc, r) => acc + r.annualFee, 0) / matched.length)
+      const courseYears = Math.round(matched.reduce((acc, r) => acc + r.courseYears, 0) / matched.length)
+      return { annualFee, courseYears }
     }
   }
 
-  const sum = rows.reduce((acc, r) => acc + r.annualFee, 0)
-  return Math.round(sum / rows.length)
+  const annualFee = Math.round(rows.reduce((acc, r) => acc + r.annualFee, 0) / rows.length)
+  const courseYears = Math.round(rows.reduce((acc, r) => acc + r.courseYears, 0) / rows.length)
+  return { annualFee, courseYears }
+}
+
+/** Backward-compatible: returns annual fee only, or null. */
+export function getAnnualFeeForUni(
+  uniName: string,
+  preferredFields?: string[]
+): number | null {
+  const info = getFeeInfoForUni(uniName, preferredFields)
+  return info ? info.annualFee : null
 }
