@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { generateUACTimelineFromCSV } from "@/lib/data/uac-parser"
 import { calculateCommuteRoute } from "@/lib/data/nsw-trip-planner"
 import { getRentalDataByPostcode, loadRentalData } from "@/lib/data/rental-parser"
+import { parseBenefitsCSV, type BenefitDefinition } from "@/lib/data/benefits-parser"
 
 async function calculateCommute(userData: any) {
   const universities = userData.targetUniversities || []
@@ -72,60 +73,56 @@ function getMockRentalData(postcode: string) {
   }
 }
 
-function checkBenefitsEligibility(userData: any) {
-  // Rule-based eligibility check
-  const age = parseInt(userData.age)
+function evaluateBenefitEligibility(def: BenefitDefinition, userData: any): { eligible: boolean; reason?: string } {
+  const age = typeof userData.age === 'number' ? userData.age : parseInt(String(userData.age ?? ''), 10)
   const income = userData.householdIncome
   const livingSituation = userData.livingSituation
+  const isIndigenous = Boolean(userData.isIndigenous)
+  const movingForStudy = Boolean(userData.movingForStudy)
 
-  const eligible = []
+  if (def.alwaysEligible) return { eligible: true }
 
-  // Youth Allowance eligibility
-  if (age >= 18 && age < 25) {
-    if (income === "under-50k" || income === "50k-100k") {
-      eligible.push({
-        name: "Youth Allowance",
-        eligible: true,
-        estimatedAmount: "$300-600 per fortnight",
-        nextSteps: [
-          "Check eligibility on Services Australia website",
-          "Gather required documents (ID, income statements)",
-          "Submit application online",
-        ],
-      })
-    } else {
-      eligible.push({
-        name: "Youth Allowance",
-        eligible: false,
-        reason: "Household income may be too high",
-        nextSteps: ["Check income test thresholds", "Consider part-time work options"],
-      })
+  if (def.ageMin != null && (Number.isNaN(age) || age < def.ageMin)) {
+    return { eligible: false, reason: `Minimum age is ${def.ageMin}` }
+  }
+  if (def.ageMax != null && (Number.isNaN(age) || age > def.ageMax)) {
+    return { eligible: false, reason: `Maximum age is ${def.ageMax}` }
+  }
+  if (def.incomeBands != null && def.incomeBands.length > 0) {
+    if (!income || !def.incomeBands.includes(income)) {
+      return { eligible: false, reason: "Household income may not meet eligibility" }
     }
   }
-
-  // Opal Concession
-  eligible.push({
-    name: "Opal Concession Card",
-    eligible: true,
-    estimatedAmount: "50% discount on public transport",
-    nextSteps: [
-      "Apply through Transport NSW",
-      "Provide proof of student status",
-      "Collect card from Service NSW",
-    ],
-  })
-
-  // ABSTUDY (if applicable)
-  if (userData.isIndigenous) {
-    eligible.push({
-      name: "ABSTUDY",
-      eligible: true,
-      estimatedAmount: "Varies based on circumstances",
-      nextSteps: ["Contact Centrelink", "Provide Aboriginal/Torres Strait Islander confirmation"],
-    })
+  if (def.livingSituation != null && def.livingSituation.length > 0) {
+    if (!livingSituation || !def.livingSituation.includes(livingSituation)) {
+      return { eligible: false, reason: "Living situation may not meet eligibility" }
+    }
+  }
+  if (def.requiresIndigenous === true && !isIndigenous) {
+    return { eligible: false, reason: "Eligibility is for Aboriginal and Torres Strait Islander students" }
+  }
+  if (def.requiresMovingForStudy === true && !movingForStudy) {
+    return { eligible: false, reason: "For students relocating to study" }
   }
 
-  return eligible
+  return { eligible: true }
+}
+
+function checkBenefitsEligibility(userData: any) {
+  const definitions = parseBenefitsCSV()
+  if (definitions.length === 0) return []
+
+  return definitions.map((def) => {
+    const { eligible, reason } = evaluateBenefitEligibility(def, userData)
+    return {
+      name: def.name,
+      eligible,
+      ...(def.estimatedAmount && { estimatedAmount: def.estimatedAmount }),
+      ...(reason && { reason }),
+      nextSteps: def.nextSteps,
+      learnMoreUrl: def.learnMoreUrl,
+    }
+  })
 }
 
 function calculateFees(userData: any) {
