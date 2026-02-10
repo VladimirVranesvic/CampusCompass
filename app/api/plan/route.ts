@@ -3,6 +3,7 @@ import { generateUACTimelineFromCSV } from "@/lib/data/uac-parser"
 import { calculateCommuteRoute } from "@/lib/data/nsw-trip-planner"
 import { getRentalDataByPostcode, loadRentalData } from "@/lib/data/rental-parser"
 import { parseBenefitsCSV, type BenefitDefinition } from "@/lib/data/benefits-parser"
+import { getAnnualFeeForUni } from "@/lib/data/fees-parser"
 
 async function calculateCommute(userData: any) {
   const universities = userData.targetUniversities || []
@@ -115,14 +116,30 @@ function checkBenefitsEligibility(userData: any) {
   })
 }
 
+const DEFAULT_ANNUAL_FEE = 15000 // Fallback when no CSV data (AUD)
+
 function calculateFees(userData: any) {
-  // Mock fee calculation - replace with actual StudyAssist formulas
-  const universities = userData.targetUniversities || []
-  const averageAnnualFee = 15000 // Average annual fee in AUD
+  const universities: string[] = userData.targetUniversities || []
+  const preferredFields: string[] = userData.preferredFields || []
+
+  const byUniversity = universities.map((uni: string) => {
+    const fee = getAnnualFeeForUni(uni, preferredFields)
+    return {
+      university: uni,
+      estimatedAnnualFee: fee ?? DEFAULT_ANNUAL_FEE,
+    }
+  })
+
+  const estimatedAnnualFee =
+    byUniversity.length > 0
+      ? Math.round(
+          byUniversity.reduce((a, u) => a + u.estimatedAnnualFee, 0) / byUniversity.length
+        )
+      : DEFAULT_ANNUAL_FEE
 
   return {
-    estimatedAnnualFee: averageAnnualFee,
-    estimatedTotalFee: averageAnnualFee * 3, // Assuming 3-year degree
+    estimatedAnnualFee,
+    estimatedTotalFee: estimatedAnnualFee * 3,
     hecsHelp: {
       available: true,
       repaymentThreshold: 51950, // 2024-25 threshold
@@ -130,12 +147,9 @@ function calculateFees(userData: any) {
     },
     upfrontPayment: {
       discount: "10% discount if paid upfront",
-      amount: (averageAnnualFee * 0.9).toFixed(2),
+      amount: (estimatedAnnualFee * 0.9).toFixed(2),
     },
-    byUniversity: universities.map((uni: string) => ({
-      university: uni,
-      estimatedAnnualFee: averageAnnualFee + Math.floor(Math.random() * 5000) - 2500,
-    })),
+    byUniversity,
   }
 }
 
