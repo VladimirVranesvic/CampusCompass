@@ -3,7 +3,7 @@ import { generateUACTimelineFromCSV } from "@/lib/data/uac-parser"
 import { calculateCommuteRoute } from "@/lib/data/nsw-trip-planner"
 import { getRentalDataByPostcode, loadRentalData } from "@/lib/data/rental-parser"
 import { parseBenefitsCSV, type BenefitDefinition } from "@/lib/data/benefits-parser"
-import { getFeeInfoForUni } from "@/lib/data/fees-parser"
+import { getAllMatchingFacultiesForUni } from "@/lib/data/fees-parser"
 
 async function calculateCommute(userData: any) {
   const universities = userData.targetUniversities || []
@@ -122,28 +122,60 @@ const DEFAULT_COURSE_YEARS = 3
 function calculateFees(userData: any) {
   const universities: string[] = userData.targetUniversities || []
   const preferredFields: string[] = userData.preferredFields || []
+  const primaryPreference = preferredFields.length > 0 ? preferredFields[0] : null
 
-  const byUniversity = universities.map((uni: string) => {
-    const info = getFeeInfoForUni(uni, preferredFields)
-    const annualFee = info?.annualFee ?? DEFAULT_ANNUAL_FEE
-    const courseYears = info?.courseYears ?? DEFAULT_COURSE_YEARS
-    return {
-      university: uni,
-      estimatedAnnualFee: annualFee,
-      courseYears,
-      estimatedTotalFee: annualFee * courseYears,
+  // Build byUniversity array with all matching faculties per university
+  const byUniversity: Array<{
+    university: string
+    faculty: string
+    estimatedAnnualFee: number
+    courseYears: number
+    estimatedTotalFee: number
+    isPrimary: boolean
+  }> = []
+
+  universities.forEach((uni: string) => {
+    const matchingFaculties = getAllMatchingFacultiesForUni(uni, preferredFields)
+
+    if (matchingFaculties.length > 0) {
+      // Add each matching faculty as a separate entry
+      matchingFaculties.forEach((facultyFee, index) => {
+        const isPrimary = index === 0 && primaryPreference !== null
+        byUniversity.push({
+          university: uni,
+          faculty: facultyFee.faculty,
+          estimatedAnnualFee: facultyFee.annualFee,
+          courseYears: facultyFee.courseYears,
+          estimatedTotalFee: facultyFee.annualFee * facultyFee.courseYears,
+          isPrimary,
+        })
+      })
+    } else {
+      // No CSV data: add fallback entry
+      byUniversity.push({
+        university: uni,
+        faculty: primaryPreference || "General",
+        estimatedAnnualFee: DEFAULT_ANNUAL_FEE,
+        courseYears: DEFAULT_COURSE_YEARS,
+        estimatedTotalFee: DEFAULT_ANNUAL_FEE * DEFAULT_COURSE_YEARS,
+        isPrimary: true,
+      })
     }
   })
 
-  const estimatedAnnualFee =
-    byUniversity.length > 0
+  // Summary totals: use primary preference (first faculty entry marked as primary)
+  const primaryEntry = byUniversity.find((entry) => entry.isPrimary)
+  const estimatedAnnualFee = primaryEntry
+    ? primaryEntry.estimatedAnnualFee
+    : byUniversity.length > 0
       ? Math.round(
           byUniversity.reduce((a, u) => a + u.estimatedAnnualFee, 0) / byUniversity.length
         )
       : DEFAULT_ANNUAL_FEE
 
-  const avgCourseYears =
-    byUniversity.length > 0
+  const courseYearsForTotal = primaryEntry
+    ? primaryEntry.courseYears
+    : byUniversity.length > 0
       ? Math.round(
           byUniversity.reduce((a, u) => a + u.courseYears, 0) / byUniversity.length
         )
@@ -151,7 +183,7 @@ function calculateFees(userData: any) {
 
   return {
     estimatedAnnualFee,
-    estimatedTotalFee: estimatedAnnualFee * avgCourseYears,
+    estimatedTotalFee: estimatedAnnualFee * courseYearsForTotal,
     hecsHelp: {
       available: true,
       repaymentThreshold: 51950, // 2024-25 threshold

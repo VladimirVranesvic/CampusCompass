@@ -20,7 +20,7 @@ const userSchema = z.object({
   // Education
   currentYear: z.string().min(1, "Please select your current year"),
   targetUniversities: z.array(z.string()).min(1, "Select at least one university"),
-  preferredFields: z.array(z.string()).optional(),
+  preferredFields: z.array(z.string()).min(1, "Select at least one study field"),
   
   // Living Situation
   livingSituation: z.string().min(1, "Please select living situation"),
@@ -106,7 +106,7 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
     if (step === 1) {
       isValid = await form.trigger(["postcode", "age"])
     } else if (step === 2) {
-      isValid = await form.trigger(["currentYear", "targetUniversities"])
+      isValid = await form.trigger(["currentYear", "targetUniversities", "preferredFields"])
     } else if (step === 3) {
       isValid = await form.trigger(["livingSituation", "householdIncome"])
     } else if (step === 4) {
@@ -244,24 +244,47 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
               </div>
 
               <div>
-                <Label>Preferred Study Fields (Optional)</Label>
+                <Label>Preferred Study Fields *</Label>
+                <p className="text-sm text-muted-foreground mt-1 mb-2">
+                  Select at least one field. Your first selection will be used as your primary preference for fee estimates.
+                </p>
                 <div className="mt-2 grid grid-cols-2 gap-3 md:grid-cols-3">
-                  {studyFields.map((field) => (
-                    <div key={field} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={field}
-                        checked={watchedFields.includes(field)}
-                        onCheckedChange={() => toggleField(field)}
-                      />
-                      <label
-                        htmlFor={field}
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                      >
-                        {field}
-                      </label>
-                    </div>
-                  ))}
+                  {studyFields.map((field) => {
+                    const index = watchedFields.indexOf(field)
+                    const isSelected = index !== -1
+                    const isPrimary = index === 0
+                    return (
+                      <div key={field} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={field}
+                          checked={isSelected}
+                          onCheckedChange={() => toggleField(field)}
+                        />
+                        <label
+                          htmlFor={field}
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex items-center gap-2"
+                        >
+                          <span>{field}</span>
+                          {isPrimary && (
+                            <span className="text-xs px-1.5 py-0.5 rounded bg-lime/20 text-lime font-medium">
+                              1st
+                            </span>
+                          )}
+                          {isSelected && !isPrimary && (
+                            <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                              #{index + 1}
+                            </span>
+                          )}
+                        </label>
+                      </div>
+                    )
+                  })}
                 </div>
+                {errors.preferredFields && (
+                  <p className="mt-1 text-sm text-destructive">
+                    {errors.preferredFields.message}
+                  </p>
+                )}
               </div>
             </div>
           )}

@@ -1,7 +1,10 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { DollarSign, GraduationCap, Calculator } from "lucide-react"
+import { DollarSign, GraduationCap, Calculator, ChevronDown, ChevronUp } from "lucide-react"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { Button } from "@/components/ui/button"
 
 interface FeesCalculatorProps {
   fees: {
@@ -18,15 +21,83 @@ interface FeesCalculatorProps {
     }
     byUniversity: Array<{
       university: string
+      faculty: string
       estimatedAnnualFee: number
       courseYears: number
       estimatedTotalFee: number
+      isPrimary: boolean
     }>
   }
   userData: any
 }
 
 export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
+  // Group entries by university
+  const groupedByUniversity = fees.byUniversity.reduce(
+    (acc, entry) => {
+      if (!acc[entry.university]) {
+        acc[entry.university] = { primary: [], others: [] }
+      }
+      if (entry.isPrimary) {
+        acc[entry.university].primary.push(entry)
+      } else {
+        acc[entry.university].others.push(entry)
+      }
+      return acc
+    },
+    {} as Record<
+      string,
+      {
+        primary: typeof fees.byUniversity
+        others: typeof fees.byUniversity
+      }
+    >
+  )
+
+  const [expandedUniversities, setExpandedUniversities] = useState<Set<string>>(new Set())
+
+  const toggleUniversity = (uni: string) => {
+    const newExpanded = new Set(expandedUniversities)
+    if (newExpanded.has(uni)) {
+      newExpanded.delete(uni)
+    } else {
+      newExpanded.add(uni)
+    }
+    setExpandedUniversities(newExpanded)
+  }
+
+  const renderFeeEntry = (entry: (typeof fees.byUniversity)[0]) => (
+    <div
+      key={`${entry.university}-${entry.faculty}`}
+      className={`flex items-center justify-between p-3 rounded-lg border ${
+        entry.isPrimary ? "border-lime/40 bg-lime/10" : ""
+      }`}
+    >
+      <div>
+        <p className="font-medium">
+          {entry.university}
+          {entry.faculty && entry.faculty !== "General" && (
+            <span className="text-muted-foreground"> - {entry.faculty}</span>
+          )}
+        </p>
+        <p className="text-sm text-muted-foreground">
+          {entry.courseYears} {entry.courseYears === 1 ? "year" : "years"}
+          {entry.isPrimary && (
+            <span className="ml-2 text-lime font-medium">(Primary preference)</span>
+          )}
+        </p>
+      </div>
+      <div className="text-right">
+        <p className="font-semibold">
+          ${entry.estimatedAnnualFee.toLocaleString()}/year
+        </p>
+        <p className="text-sm text-muted-foreground">
+          Total: ${entry.estimatedTotalFee.toLocaleString()}
+        </p>
+      </div>
+    </div>
+  )
+
   return (
     <Card>
       <CardHeader>
@@ -44,6 +115,7 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
               <p className="text-sm text-muted-foreground">Estimated Annual Fee</p>
             </div>
             <p className="text-2xl font-bold">${fees.estimatedAnnualFee.toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground mt-1">Based on primary preference</p>
           </div>
 
           <div className="p-4 rounded-lg border">
@@ -52,6 +124,7 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
               <p className="text-sm text-muted-foreground">Estimated Total (course duration)</p>
             </div>
             <p className="text-2xl font-bold">${fees.estimatedTotalFee.toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground mt-1">Based on primary preference</p>
           </div>
         </div>
 
@@ -92,26 +165,38 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
         {/* By University */}
         <div>
           <h3 className="font-semibold mb-3">Estimated Fees by University</h3>
-          <div className="space-y-2">
-            {fees.byUniversity.map((uni, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 rounded-lg border"
-              >
-                <div>
-                  <p className="font-medium">{uni.university}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {uni.courseYears} {uni.courseYears === 1 ? "year" : "years"}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold">
-                    ${uni.estimatedAnnualFee.toLocaleString()}/year
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Total: ${uni.estimatedTotalFee.toLocaleString()}
-                  </p>
-                </div>
+          <div className="space-y-3">
+            {Object.entries(groupedByUniversity).map(([university, { primary, others }]) => (
+              <div key={university} className="space-y-2">
+                {/* Primary preferences (always shown) */}
+                {primary.map((entry) => renderFeeEntry(entry))}
+
+                {/* Other preferences (collapsible) */}
+                {others.length > 0 && (
+                  <Collapsible
+                    open={expandedUniversities.has(university)}
+                    onOpenChange={() => toggleUniversity(university)}
+                  >
+                    <CollapsibleTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-between text-sm text-muted-foreground hover:text-foreground"
+                      >
+                        <span>
+                          View other preferences ({others.length})
+                        </span>
+                        {expandedUniversities.has(university) ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="space-y-2 pt-2">
+                      {others.map((entry) => renderFeeEntry(entry))}
+                    </CollapsibleContent>
+                  </Collapsible>
+                )}
               </div>
             ))}
           </div>

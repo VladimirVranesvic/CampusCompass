@@ -109,6 +109,48 @@ export function getFeeInfoForUni(
   return { annualFee, courseYears }
 }
 
+/**
+ * Get all matching faculty fee info for one university, preserving preferredFields order.
+ * Returns an array of FacultyFee objects, one per matching faculty.
+ * If preferredFields is provided, only returns matching faculties in the order they appear in preferredFields.
+ * If no preferredFields or no matches, returns all faculties from the CSV (or empty array if no CSV).
+ */
+export function getAllMatchingFacultiesForUni(
+  uniName: string,
+  preferredFields?: string[]
+): FacultyFee[] {
+  const slug = getUniSlug(uniName)
+  if (!slug) return []
+
+  const allRows = parseFeesCSV(slug)
+  if (allRows.length === 0) return []
+
+  if (preferredFields && preferredFields.length > 0) {
+    const matched: FacultyFee[] = []
+    const seenFaculties = new Set<string>()
+
+    // Preserve order: iterate through preferredFields and find matches
+    for (const preferredField of preferredFields) {
+      const normalizedPreferred = preferredField.trim().toLowerCase()
+      for (const row of allRows) {
+        const normalizedFaculty = row.faculty.trim().toLowerCase()
+        if (
+          normalizedFaculty === normalizedPreferred &&
+          !seenFaculties.has(normalizedFaculty)
+        ) {
+          matched.push(row)
+          seenFaculties.add(normalizedFaculty)
+          break // Only add first match per preferredField
+        }
+      }
+    }
+    return matched
+  }
+
+  // No preferredFields: return all faculties
+  return allRows
+}
+
 /** Backward-compatible: returns annual fee only, or null. */
 export function getAnnualFeeForUni(
   uniName: string,
