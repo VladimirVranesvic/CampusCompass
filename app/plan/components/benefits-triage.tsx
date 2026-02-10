@@ -10,6 +10,7 @@ interface Benefit {
   estimatedAmount?: string
   reason?: string
   nextSteps: string[]
+  learnMoreUrl?: string
 }
 
 interface BenefitsTriageProps {
@@ -65,7 +66,7 @@ export function BenefitsTriage({ benefits, userData }: BenefitsTriageProps) {
                     size="sm"
                     className="mt-3"
                     onClick={() =>
-                      window.open("https://www.servicesaustralia.gov.au", "_blank")
+                      window.open(benefit.learnMoreUrl ?? "https://www.servicesaustralia.gov.au", "_blank")
                     }
                   >
                     Learn More
@@ -108,6 +109,17 @@ export function BenefitsTriage({ benefits, userData }: BenefitsTriageProps) {
                       ))}
                     </ul>
                   </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-3"
+                    onClick={() =>
+                      window.open(benefit.learnMoreUrl ?? "https://www.servicesaustralia.gov.au", "_blank")
+                    }
+                  >
+                    Learn More
+                    <ExternalLink className="ml-2 h-3 w-3" />
+                  </Button>
                 </div>
               ))}
             </div>
