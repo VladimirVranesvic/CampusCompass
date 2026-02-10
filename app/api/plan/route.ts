@@ -125,61 +125,75 @@ function calculateFees(userData: any) {
   const primaryPreference = preferredFields.length > 0 ? preferredFields[0] : null
 
   // Build byUniversity array with all matching faculties per university
-  const byUniversity: Array<{
+  type UniversityFeeEntry = {
     university: string
     faculty: string
     estimatedAnnualFee: number
     courseYears: number
     estimatedTotalFee: number
     isPrimary: boolean
-  }> = []
-
-  universities.forEach((uni: string) => {
+    isPrimaryUniversity: boolean
+  }
+  
+  const byUniversity: Array<UniversityFeeEntry> = []
+  universities.forEach((uni: string, uniIndex) => {
     const matchingFaculties = getAllMatchingFacultiesForUni(uni, preferredFields)
+    const isFirstUniversity = uniIndex === 0
 
     if (matchingFaculties.length > 0) {
       // Add each matching faculty as a separate entry
       matchingFaculties.forEach((facultyFee, index) => {
-        const isPrimary = index === 0 && primaryPreference !== null
-        byUniversity.push({
+        // Only the first university's first matching faculty is marked as primary (for summary)
+        const isPrimary = isFirstUniversity && index === 0 && primaryPreference !== null
+        
+        const entry: UniversityFeeEntry = {
           university: uni,
           faculty: facultyFee.faculty,
           estimatedAnnualFee: facultyFee.annualFee,
           courseYears: facultyFee.courseYears,
           estimatedTotalFee: facultyFee.annualFee * facultyFee.courseYears,
           isPrimary,
-        })
+          isPrimaryUniversity: isFirstUniversity,
+        }
+        
+        byUniversity.push(entry)
       })
     } else {
       // No CSV data: add fallback entry
-      byUniversity.push({
+      const isPrimary = isFirstUniversity && primaryPreference !== null
+      const entry: UniversityFeeEntry = {
         university: uni,
         faculty: primaryPreference || "General",
         estimatedAnnualFee: DEFAULT_ANNUAL_FEE,
         courseYears: DEFAULT_COURSE_YEARS,
         estimatedTotalFee: DEFAULT_ANNUAL_FEE * DEFAULT_COURSE_YEARS,
-        isPrimary: true,
-      })
+        isPrimary,
+        isPrimaryUniversity: isFirstUniversity,
+      }
+      
+      byUniversity.push(entry)
     }
   })
 
-  // Summary totals: use primary preference (first faculty entry marked as primary)
-  const primaryEntry = byUniversity.find((entry) => entry.isPrimary)
-  const estimatedAnnualFee = primaryEntry
-    ? primaryEntry.estimatedAnnualFee
-    : byUniversity.length > 0
-      ? Math.round(
-          byUniversity.reduce((a, u) => a + u.estimatedAnnualFee, 0) / byUniversity.length
-        )
-      : DEFAULT_ANNUAL_FEE
-
-  const courseYearsForTotal = primaryEntry
-    ? primaryEntry.courseYears
-    : byUniversity.length > 0
-      ? Math.round(
-          byUniversity.reduce((a, u) => a + u.courseYears, 0) / byUniversity.length
-        )
-      : DEFAULT_COURSE_YEARS
+  // Summary totals: use only the first university's primary preference
+  const firstUniversityPrimaryEntry = byUniversity.find((entry) => entry.isPrimary)
+  let estimatedAnnualFee: number
+  let courseYearsForTotal: number
+  
+  if (firstUniversityPrimaryEntry) {
+    estimatedAnnualFee = firstUniversityPrimaryEntry.estimatedAnnualFee
+    courseYearsForTotal = firstUniversityPrimaryEntry.courseYears
+  } else if (byUniversity.length > 0) {
+    estimatedAnnualFee = Math.round(
+      byUniversity.reduce((a, u) => a + u.estimatedAnnualFee, 0) / byUniversity.length
+    )
+    courseYearsForTotal = Math.round(
+      byUniversity.reduce((a, u) => a + u.courseYears, 0) / byUniversity.length
+    )
+  } else {
+    estimatedAnnualFee = DEFAULT_ANNUAL_FEE
+    courseYearsForTotal = DEFAULT_COURSE_YEARS
+  }
 
   return {
     estimatedAnnualFee,

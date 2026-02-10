@@ -26,32 +26,32 @@ interface FeesCalculatorProps {
       courseYears: number
       estimatedTotalFee: number
       isPrimary: boolean
+      isPrimaryUniversity: boolean
     }>
   }
   userData: any
 }
 
 export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
-  // Group entries by university
-  const groupedByUniversity = fees.byUniversity.reduce(
+  // Extract primary university's primary faculty for big summary
+  const primarySummaryEntry = fees.byUniversity.find(
+    (entry) => entry.isPrimary && entry.isPrimaryUniversity
+  )
+
+  // Group all other entries by university (excluding primary summary)
+  const otherEntries = fees.byUniversity.filter(
+    (entry) => !(entry.isPrimary && entry.isPrimaryUniversity)
+  )
+
+  const groupedByUniversity = otherEntries.reduce(
     (acc, entry) => {
       if (!acc[entry.university]) {
-        acc[entry.university] = { primary: [], others: [] }
+        acc[entry.university] = []
       }
-      if (entry.isPrimary) {
-        acc[entry.university].primary.push(entry)
-      } else {
-        acc[entry.university].others.push(entry)
-      }
+      acc[entry.university].push(entry)
       return acc
     },
-    {} as Record<
-      string,
-      {
-        primary: typeof fees.byUniversity
-        others: typeof fees.byUniversity
-      }
-    >
+    {} as Record<string, typeof fees.byUniversity>
   )
 
   const [expandedUniversities, setExpandedUniversities] = useState<Set<string>>(new Set())
@@ -69,22 +69,14 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
   const renderFeeEntry = (entry: (typeof fees.byUniversity)[0]) => (
     <div
       key={`${entry.university}-${entry.faculty}`}
-      className={`flex items-center justify-between p-3 rounded-lg border ${
-        entry.isPrimary ? "border-lime/40 bg-lime/10" : ""
-      }`}
+      className="flex items-center justify-between p-3 rounded-lg border"
     >
       <div>
         <p className="font-medium">
-          {entry.university}
-          {entry.faculty && entry.faculty !== "General" && (
-            <span className="text-muted-foreground"> - {entry.faculty}</span>
-          )}
+          {entry.faculty && entry.faculty !== "General" ? entry.faculty : entry.university}
         </p>
         <p className="text-sm text-muted-foreground">
           {entry.courseYears} {entry.courseYears === 1 ? "year" : "years"}
-          {entry.isPrimary && (
-            <span className="ml-2 text-lime font-medium">(Primary preference)</span>
-          )}
         </p>
       </div>
       <div className="text-right">
@@ -107,7 +99,36 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Summary */}
+        {/* Primary Summary - Big Display */}
+        {primarySummaryEntry && (
+          <div className="p-6 rounded-lg border-2 border-lime/40 bg-lime/10">
+            <div className="mb-4">
+              <p className="text-sm text-muted-foreground mb-1">Primary Preference</p>
+              <p className="text-xl font-bold">
+                {primarySummaryEntry.university} - {primarySummaryEntry.faculty}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {primarySummaryEntry.courseYears} {primarySummaryEntry.courseYears === 1 ? "year" : "years"}
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Annual Fee</p>
+                <p className="text-2xl font-bold">
+                  ${primarySummaryEntry.estimatedAnnualFee.toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Total Cost</p>
+                <p className="text-2xl font-bold">
+                  ${primarySummaryEntry.estimatedTotalFee.toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
@@ -162,45 +183,38 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
           </div>
         </div>
 
-        {/* By University */}
-        <div>
-          <h3 className="font-semibold mb-3">Estimated Fees by University</h3>
-          <div className="space-y-3">
-            {Object.entries(groupedByUniversity).map(([university, { primary, others }]) => (
-              <div key={university} className="space-y-2">
-                {/* Primary preferences (always shown) */}
-                {primary.map((entry) => renderFeeEntry(entry))}
-
-                {/* Other preferences (collapsible) */}
-                {others.length > 0 && (
-                  <Collapsible
-                    open={expandedUniversities.has(university)}
-                    onOpenChange={() => toggleUniversity(university)}
-                  >
-                    <CollapsibleTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-between text-sm text-muted-foreground hover:text-foreground"
-                      >
-                        <span>
-                          View other preferences ({others.length})
-                        </span>
-                        {expandedUniversities.has(university) ? (
-                          <ChevronUp className="h-4 w-4" />
-                        ) : (
-                          <ChevronDown className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="space-y-2 pt-2">
-                      {others.map((entry) => renderFeeEntry(entry))}
-                    </CollapsibleContent>
-                  </Collapsible>
-                )}
-              </div>
-            ))}
+        {/* Other Universities and Faculties - Dropdowns */}
+        {Object.keys(groupedByUniversity).length > 0 && (
+          <div>
+            <h3 className="font-semibold mb-3">Other Options</h3>
+            <div className="space-y-3">
+              {Object.entries(groupedByUniversity).map(([university, entries]) => (
+                <Collapsible
+                  key={university}
+                  open={expandedUniversities.has(university)}
+                  onOpenChange={() => toggleUniversity(university)}
+                >
+                  <CollapsibleTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-between"
+                    >
+                      <span className="font-medium">{university}</span>
+                      {expandedUniversities.has(university) ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-2 pt-2">
+                    {entries.map((entry) => renderFeeEntry(entry))}
+                  </CollapsibleContent>
+                </Collapsible>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   )

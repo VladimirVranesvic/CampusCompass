@@ -220,21 +220,43 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
               <div>
                 <Label>Target Universities * (Select at least one)</Label>
                 <div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-2">
-                  {universities.map((uni) => (
-                    <div key={uni} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={uni}
-                        checked={watchedUniversities.includes(uni)}
-                        onCheckedChange={() => toggleUniversity(uni)}
-                      />
-                      <label
-                        htmlFor={uni}
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                      >
-                        {uni}
-                      </label>
-                    </div>
-                  ))}
+                  {universities.map((uni) => {
+                    const isSelected = watchedUniversities.includes(uni)
+                    return (
+                      <div key={uni} className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={uni}
+                            checked={isSelected}
+                            onCheckedChange={() => toggleUniversity(uni)}
+                          />
+                          <label
+                            htmlFor={uni}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                          >
+                            {uni}
+                          </label>
+                        </div>
+                        {/* Show preferences for selected universities */}
+                        {isSelected && watchedFields.length > 0 && (
+                          <div className="ml-6 flex flex-wrap gap-1.5">
+                            {watchedFields.map((field, index) => (
+                              <span
+                                key={field}
+                                className={`text-xs px-1.5 py-0.5 rounded ${
+                                  index === 0
+                                    ? "bg-lime/20 text-lime font-medium"
+                                    : "bg-muted text-muted-foreground"
+                                }`}
+                              >
+                                {index === 0 ? "1st" : `#${index + 1}`} {field}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
                 {errors.targetUniversities && (
                   <p className="mt-1 text-sm text-destructive">
