@@ -1,6 +1,9 @@
 
 # Functionalities
 
+## Chat (AI assistant)
+A floating chat widget (bottom-right) lets users ask questions about UAC, fees, benefits, and universities. It uses Google Gemini (free tier). Set `GEMINI_API_KEY` in `.env.local` — get a key at [Google AI Studio](https://aistudio.google.com/app/apikey). Without the key, the chat API returns a friendly error.
+
 ## UAC Deadlines
 
 
