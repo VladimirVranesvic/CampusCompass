@@ -1,13 +1,13 @@
 
 # Functionalities
 
+## Chat (AI assistant)
+A floating chat widget (bottom-right) lets users ask questions about UAC, fees, benefits, and universities. It uses Google Gemini (free tier). Set `GEMINI_API_KEY` in `.env.local` — get a key at [Google AI Studio](https://aistudio.google.com/app/apikey). Without the key, the chat API returns a friendly error.
+
 ## UAC Deadlines
-### Overview
 
-### Sources
-UAC Dates - https://www.uac.edu.au/assets/documents/ug-fact-sheets/ug-fact-sheet-key-dates.pdf
 
----
+ 
 
 ## Travel Planner 
 ### Overview
@@ -35,7 +35,7 @@ UAC Dates - https://www.uac.edu.au/assets/documents/ug-fact-sheets/ug-fact-sheet
 6. Testing 
     - No automated tests
 
-##### Additional Data needed from the questionaire (More accurately determine travel details)
+### Additional Data needed from the questionaire (More accurately determine travel details)
     1. Time & Schedule Details
         Class start time (e.g., 9am, 2pm, 6pm)
             - Why: NSW Transport API can provide time-specific routes with actual service schedules
@@ -80,22 +80,4 @@ UAC Dates - https://www.uac.edu.au/assets/documents/ug-fact-sheets/ug-fact-sheet
             - Can warn about service changes during university breaks
 
 
-
-
-
-
-### Sources
-Postcodes - Custom
-Trip API - https://opendata.transport.nsw.gov.au/data/dataset/trip-planner-apis
-
----
-
-## Rental Prices
-### Overview 
-
-
-### Sources
-Rental Prices - https://www.nsw.gov.au/housing-and-construction/rental-forms-surveys-and-data/rental-bond-data
-University Accomidation data
-    1. Univerisity of Sydney - 
-    2. University
+### Rental Prices
