@@ -9,6 +9,7 @@ export interface FacultyFee {
 }
 
 const UNI_NAME_TO_SLUG: Record<string, string> = {
+  'Australian Catholic University': 'australian-catholic-university',
   'University of Sydney': 'university-of-sydney',
   'UNSW Sydney': 'unsw-sydney',
   'University of Technology Sydney': 'university-of-technology-sydney',

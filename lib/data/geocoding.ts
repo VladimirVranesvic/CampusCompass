@@ -80,6 +80,7 @@ export async function getUniversityCoordinates(
     'Charles Sturt University': '2678',          // Wagga Wagga main campus
     'Southern Cross University': '2480',         // Lismore campus
     'University of New England': '2351',         // Armidale campus
+    'Australian Catholic University': '2060',  // North Sydney campus (NSW)
   }
 
   const postcode = universityMap[university]

@@ -42,6 +42,7 @@ const userSchema = z.object({
 type UserData = z.infer<typeof userSchema>
 
 const universities = [
+  "Australian Catholic University",
   "University of Sydney",
   "UNSW Sydney",
   "University of Technology Sydney",
