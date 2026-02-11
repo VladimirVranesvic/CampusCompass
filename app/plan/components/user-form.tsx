@@ -18,7 +18,7 @@ const userSchema = z.object({
   age: z.string().min(1, "Age is required"),
   
   // Education
-  currentYear: z.string().min(1, "Please select your current year"),
+  highestEducation: z.string().min(1, "Please select your highest education level"),
   targetUniversities: z.array(z.string()).min(1, "Select at least one university"),
   preferredFields: z.array(z.string()).min(1, "Select at least one study field"),
   
@@ -72,6 +72,7 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
   const form = useForm<UserData>({
     resolver: zodResolver(userSchema),
     defaultValues: {
+      highestEducation: "",
       targetUniversities: [],
       preferredFields: [],
       isIndigenous: false,
@@ -106,7 +107,7 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
     if (step === 1) {
       isValid = await form.trigger(["postcode", "age"])
     } else if (step === 2) {
-      isValid = await form.trigger(["currentYear", "targetUniversities", "preferredFields"])
+      isValid = await form.trigger(["highestEducation", "targetUniversities", "preferredFields"])
     } else if (step === 3) {
       isValid = await form.trigger(["livingSituation", "householdIncome"])
     } else if (step === 4) {
@@ -196,23 +197,24 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
           {step === 2 && (
             <div className="space-y-6">
               <div>
-                <Label htmlFor="currentYear">Current Year *</Label>
+                <Label htmlFor="highestEducation">Highest Education level *</Label>
                 <Select
-                  onValueChange={(value) => setValue("currentYear", value)}
-                  defaultValue={watch("currentYear")}
+                  onValueChange={(value) => setValue("highestEducation", value)}
+                  defaultValue={watch("highestEducation")}
                 >
                   <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select your current year" />
+                    <SelectValue placeholder="Select your highest education level" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Year 11">Year 11</SelectItem>
-                    <SelectItem value="Year 12">Year 12</SelectItem>
-                    <SelectItem value="Gap Year">Post-school applicant</SelectItem>
+                    <SelectItem value="hsc">HSC</SelectItem>
+                    <SelectItem value="certificate-diploma">Certificate or Diploma</SelectItem>
+                    <SelectItem value="bachelor">Bachelor Degree</SelectItem>
+                    <SelectItem value="graduate">Graduate Degree</SelectItem>
                   </SelectContent>
                 </Select>
-                {errors.currentYear && (
+                {errors.highestEducation && (
                   <p className="mt-1 text-sm text-destructive">
-                    {errors.currentYear.message}
+                    {errors.highestEducation.message}
                   </p>
                 )}
               </div>
@@ -249,23 +251,6 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
                             )}
                           </label>
                         </div>
-                        {/* Show preferences for selected universities */}
-                        {isSelected && watchedFields.length > 0 && (
-                          <div className="ml-6 flex flex-wrap gap-1.5">
-                            {watchedFields.map((field, index) => (
-                              <span
-                                key={field}
-                                className={`text-xs px-1.5 py-0.5 rounded ${
-                                  index === 0
-                                    ? "bg-lime/20 text-lime font-medium"
-                                    : "bg-muted text-muted-foreground"
-                                }`}
-                              >
-                                {index === 0 ? "1st" : `#${index + 1}`} {field}
-                              </span>
-                            ))}
-                          </div>
-                        )}
                       </div>
                     )
                   })}
