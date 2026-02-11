@@ -2,12 +2,12 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar, Clock } from "lucide-react"
-import { format, isAfter, isBefore } from "date-fns"
+import { format, isAfter} from "date-fns"
 
 interface UACTimelineProps {
   timeline: {
     applicationDeadline: string
-    offerRounds: Array<{ round: number; date: string; description: string }>
+    offerRounds: Array<{ round: number; description: string; applyBy: string }>
     importantDates: Array<{ date: string; event: string }>
   }
 }
@@ -47,11 +47,11 @@ export function UACTimeline({ timeline }: UACTimelineProps) {
 
         {/* Offer Rounds */}
         <div>
-          <h3 className="font-semibold mb-3">Offer Rounds</h3>
+          <h3 className="font-semibold mb-3">Application Deadlines</h3>
           <div className="space-y-3">
-            {timeline.offerRounds.map((round) => {
-              const roundDate = new Date(round.date)
-              const isUpcoming = isAfter(roundDate, today)
+          {timeline.offerRounds.map((round) => {
+              const applyByDate = new Date(round.applyBy) // Changed from round.date
+              const isUpcoming = isAfter(applyByDate, today) // Check if apply-by is upcoming
               return (
                 <div
                   key={round.round}
@@ -64,7 +64,7 @@ export function UACTimeline({ timeline }: UACTimelineProps) {
                     <p className="font-medium">{round.description}</p>
                     <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
                       <Calendar className="h-4 w-4" />
-                      {format(roundDate, "MMMM d, yyyy")}
+                      Apply by {format(applyByDate, "MMMM d, yyyy")}
                     </div>
                   </div>
                   {isUpcoming && (
@@ -82,26 +82,28 @@ export function UACTimeline({ timeline }: UACTimelineProps) {
         <div>
           <h3 className="font-semibold mb-3">Important Dates</h3>
           <div className="space-y-2">
-            {timeline.importantDates.map((dateItem, index) => {
-              const date = new Date(dateItem.date)
-              const isPast = isBefore(date, today)
-              return (
-                <div
-                  key={index}
-                  className={`flex items-center gap-3 p-2 rounded ${
-                    isPast ? "opacity-60" : ""
-                  }`}
-                >
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <div className="flex-1">
-                    <span className="font-medium">{dateItem.event}</span>
-                    <span className="text-sm text-muted-foreground ml-2">
-                      {format(date, "MMM d, yyyy")}
-                    </span>
+            {timeline.importantDates
+              .filter(dateItem => {
+                const date = new Date(dateItem.date)
+                return isAfter(date, today) || date.toDateString() === today.toDateString()
+              })
+              .map((dateItem, index) => {
+                const date = new Date(dateItem.date)
+                return (
+                  <div
+                    key={index}
+                    className="flex items-center gap-3 p-2 rounded"
+                  >
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex-1">
+                      <span className="font-medium">{dateItem.event}</span>
+                      <span className="text-sm text-muted-foreground ml-2">
+                        {format(date, "MMM d, yyyy")}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              )
-            })}
+                )
+              })}
           </div>
         </div>
       </CardContent>

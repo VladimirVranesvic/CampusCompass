@@ -36,55 +36,6 @@ export function Footer() {
 
   return (
     <footer>
-      {/* Newsletter Banner */}
-      <div className="bg-sage-dark py-16 md:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-12 lg:flex-row lg:items-center lg:justify-between">
-            {/* Left - Headline */}
-            <div className="lg:max-w-md">
-              <h2 className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
-                Start your uni
-                <br />
-                journey strong
-              </h2>
-            </div>
-
-            {/* Right - Form */}
-            <div className="lg:max-w-lg">
-              <p className="text-muted-foreground leading-relaxed">
-                Get practical tips, checklists, and reminders to help you feel confident about your
-                next steps. Sign up for updates and make your move to uni smoother, one email at a
-                time.
-              </p>
-              <form
-                className="mt-6 flex gap-3"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  setEmail("")
-                }}
-              >
-                <Input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="h-12 flex-1 rounded-md border-border bg-background"
-                />
-                <Button
-                  type="submit"
-                  className="h-12 rounded-md bg-lime px-6 text-foreground hover:bg-lime-hover"
-                >
-                  Submit
-                </Button>
-              </form>
-              <p className="mt-3 text-sm text-muted-foreground">
-                We only send useful info—no spam, ever.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Main Footer */}
       <div className="bg-foreground py-12 text-background">
