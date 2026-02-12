@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { DollarSign, GraduationCap, Calculator, ChevronDown, ChevronUp, ExternalLink } from "lucide-react"
+import { DollarSign, GraduationCap, Calculator, ChevronDown, ChevronUp, ExternalLink, AlertTriangle } from "lucide-react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Button } from "@/components/ui/button"
 
@@ -28,6 +28,11 @@ interface FeesCalculatorProps {
       isPrimary: boolean
       isPrimaryUniversity: boolean
       facultyUrl?: string
+    }>
+    unavailableFacultiesWarnings?: Array<{
+      university: string
+      unavailableFaculties: string[]
+      availableFaculties: string[]
     }>
   }
   userData: any
@@ -203,6 +208,60 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
             <p className="text-sm text-muted-foreground">per year (with discount)</p>
           </div>
         </div>
+
+        {/* Warnings for Unavailable Faculties */}
+        {fees.unavailableFacultiesWarnings && fees.unavailableFacultiesWarnings.length > 0 && (
+          <div>
+            <h3 className="font-semibold mb-3">Important Notice</h3>
+            <div className="space-y-3">
+              {fees.unavailableFacultiesWarnings.map((warning, index) => (
+                <div
+                  key={`warning-${index}`}
+                  className="p-4 rounded-lg border border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950/20"
+                >
+                  <div className="flex items-start gap-2 mb-2">
+                    <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-500 shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="font-semibold text-yellow-900 dark:text-yellow-100">
+                        {warning.university}
+                      </p>
+                      <p className="text-sm text-yellow-800 dark:text-yellow-200 mt-1">
+                        {warning.unavailableFaculties.length === warning.unavailableFaculties.length &&
+                        warning.unavailableFaculties.length === 1 ? (
+                          <>
+                            <strong>{warning.unavailableFaculties[0]}</strong> is not offered at this university.
+                          </>
+                        ) : (
+                          <>
+                            The following fields are <strong>not offered</strong> at this university:{" "}
+                            <strong>{warning.unavailableFaculties.join(", ")}</strong>.
+                          </>
+                        )}
+                      </p>
+                      {warning.availableFaculties.length > 0 && (
+                        <div className="mt-3">
+                          <p className="text-sm font-medium text-yellow-900 dark:text-yellow-100 mb-1">
+                            Available fields at {warning.university}:
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {warning.availableFaculties.map((faculty) => (
+                              <span
+                                key={faculty}
+                                className="px-2 py-1 text-xs rounded-md bg-yellow-100 dark:bg-yellow-900/40 text-yellow-900 dark:text-yellow-100 border border-yellow-300 dark:border-yellow-700"
+                              >
+                                {faculty}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Other Universities and Faculties - Dropdowns */}
         {Object.keys(groupedByUniversity).length > 0 && (
