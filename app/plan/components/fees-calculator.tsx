@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { DollarSign, GraduationCap, Calculator, ChevronDown, ChevronUp } from "lucide-react"
+import { DollarSign, GraduationCap, Calculator, ChevronDown, ChevronUp, ExternalLink } from "lucide-react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Button } from "@/components/ui/button"
 
@@ -27,6 +27,7 @@ interface FeesCalculatorProps {
       estimatedTotalFee: number
       isPrimary: boolean
       isPrimaryUniversity: boolean
+      facultyUrl?: string
     }>
   }
   userData: any
@@ -69,17 +70,27 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
   const renderFeeEntry = (entry: (typeof fees.byUniversity)[0]) => (
     <div
       key={`${entry.university}-${entry.faculty}`}
-      className="flex items-center justify-between p-3 rounded-lg border"
+      className="flex items-center justify-between gap-3 p-3 rounded-lg border"
     >
-      <div>
+      <div className="min-w-0 flex-1">
         <p className="font-medium">
           {entry.faculty && entry.faculty !== "General" ? entry.faculty : entry.university}
         </p>
         <p className="text-sm text-muted-foreground">
           {entry.courseYears} {entry.courseYears === 1 ? "year" : "years"}
         </p>
+        {entry.facultyUrl && (
+          <a
+            href={entry.facultyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs text-foreground hover:underline mt-1"
+          >
+            Learn more <ExternalLink className="size-3" />
+          </a>
+        )}
       </div>
-      <div className="text-right">
+      <div className="text-right shrink-0">
         <p className="font-semibold">
           ${entry.estimatedAnnualFee.toLocaleString()}/year
         </p>
@@ -110,6 +121,16 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
               <p className="text-sm text-muted-foreground mt-1">
                 {primarySummaryEntry.courseYears} {primarySummaryEntry.courseYears === 1 ? "year" : "years"}
               </p>
+              {primarySummaryEntry.facultyUrl && (
+                <a
+                  href={primarySummaryEntry.facultyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-sm text-foreground hover:underline mt-2"
+                >
+                  Learn more about this faculty <ExternalLink className="size-3.5" />
+                </a>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>

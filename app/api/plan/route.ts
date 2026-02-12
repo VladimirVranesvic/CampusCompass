@@ -133,6 +133,7 @@ function calculateFees(userData: any) {
     estimatedTotalFee: number
     isPrimary: boolean
     isPrimaryUniversity: boolean
+    facultyUrl?: string
   }
   
   const byUniversity: Array<UniversityFeeEntry> = []
@@ -154,6 +155,7 @@ function calculateFees(userData: any) {
           estimatedTotalFee: facultyFee.annualFee * facultyFee.courseYears,
           isPrimary,
           isPrimaryUniversity: isFirstUniversity,
+          facultyUrl: facultyFee.facultyUrl,
         }
         
         byUniversity.push(entry)

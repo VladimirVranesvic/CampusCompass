@@ -6,6 +6,7 @@ export interface FacultyFee {
   annualFee: number
   courseYears: number
   notes?: string
+  facultyUrl?: string
 }
 
 const UNI_NAME_TO_SLUG: Record<string, string> = {
@@ -28,7 +29,7 @@ export function getUniSlug(uniName: string): string | null {
 
 /**
  * Parse a single university's fees CSV from public/data/fees/<slug>.csv.
- * Columns: faculty, annualFee, courseYears, notes (optional).
+ * Columns: faculty, annualFee, courseYears, notes (optional), facultyUrl (optional).
  * Returns empty array if file is missing or invalid.
  */
 export function parseFeesCSV(uniSlug: string): FacultyFee[] {
@@ -66,6 +67,7 @@ export function parseFeesCSV(uniSlug: string): FacultyFee[] {
     const annualFeeRaw = values[1]?.trim()
     const courseYearsRaw = values[2]?.trim()
     const notes = values[3]?.trim()
+    const facultyUrlRaw = values[4]?.trim()
     if (!faculty || annualFeeRaw === undefined || courseYearsRaw === undefined) continue
 
     const annualFee = parseInt(annualFeeRaw, 10)
@@ -74,7 +76,18 @@ export function parseFeesCSV(uniSlug: string): FacultyFee[] {
     const courseYears = parseInt(courseYearsRaw, 10)
     if (Number.isNaN(courseYears) || courseYears <= 0) continue
 
-    fees.push({ faculty, annualFee, courseYears, notes: notes || undefined })
+    const facultyUrl =
+      facultyUrlRaw && facultyUrlRaw.startsWith("http")
+        ? facultyUrlRaw
+        : undefined
+
+    fees.push({
+      faculty,
+      annualFee,
+      courseYears,
+      notes: notes || undefined,
+      facultyUrl,
+    })
   }
   return fees
 }
