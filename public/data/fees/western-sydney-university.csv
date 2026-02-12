@@ -1,10 +1,10 @@
 faculty,annualFee,courseYears,notes,facultyUrl
-Engineering,9537,4,Cluster 3 CSP,
-Science,9537,3,Cluster 3 CSP,
-Business,17399,3,Cluster 1 CSP,
-Arts & Humanities,4738,3,Cluster 2 CSP,
-Law,17399,4,Cluster 1 CSP,
-Education,4738,4,Cluster 2 CSP,
-IT & Computing,9537,3,Cluster 2 CSP,
-Health Sciences,9537,3,Cluster 2 CSP,
-Creative Arts,9537,3,Cluster 2 CSP,
+Engineering,9537,4,Cluster 3 CSP,https://www.westernsydney.edu.au/schools/soedbe
+Science,9537,3,Cluster 3 CSP,https://www.westernsydney.edu.au/schools/soedbe
+Business,17399,3,Cluster 1 CSP,https://www.westernsydney.edu.au/schools/sobus
+Arts & Humanities,4738,3,Cluster 2 CSP,https://www.westernsydney.edu.au/schools/sosh
+Law,17399,4,Cluster 1 CSP,https://www.westernsydney.edu.au/schools/sol
+Education,4738,4,Cluster 2 CSP,https://www.westernsydney.edu.au/schools/soe
+IT & Computing,9537,3,Cluster 2 CSP,https://www.westernsydney.edu.au/schools/soedbe
+Health Sciences,9537,3,Cluster 2 CSP,https://www.westernsydney.edu.au/schools/sohs
+Creative Arts,9537,3,Cluster 2 CSP,https://www.westernsydney.edu.au/schools/sopa

@@ -1,11 +1,11 @@
 faculty,annualFee,courseYears,notes,facultyUrl
-Engineering,9537,4,Cluster 3 CSP,
-Science,9537,3,Cluster 3 CSP,
-Business,17399,3,Cluster 1 CSP,
-Arts & Humanities,4738,3,Cluster 2 CSP,
-Medicine,13558,5,Cluster 4 CSP; JMP with UON 5yr,
-Law,17399,4,Cluster 1 CSP,
-Education,4738,4,Cluster 2 CSP,
-IT & Computing,9537,3,Cluster 2 CSP,
-Health Sciences,9537,3,Cluster 2 CSP,
-Creative Arts,9537,3,Cluster 2 CSP,
+Engineering,9537,4,Cluster 3 CSP,https://www.une.edu.au/about-une/faculty-of-science-agriculture-business-and-law/school-of-science-and-technology
+Science,9537,3,Cluster 3 CSP,https://www.une.edu.au/about-une/faculty-of-science-agriculture-business-and-law/school-of-science-and-technology
+Business,17399,3,Cluster 1 CSP,https://www.une.edu.au/about-une/faculty-of-science-agriculture-business-and-law/unebs
+Arts & Humanities,4738,3,Cluster 2 CSP,https://www.une.edu.au/about-une/faculty-of-humanities-arts-social-sciences-and-education
+Medicine,13558,5,Cluster 4 CSP; JMP with UON 5yr,https://www.une.edu.au/about-une/faculty-of-medicine-and-health
+Law,17399,4,Cluster 1 CSP,https://www.une.edu.au/about-une/faculty-of-science-agriculture-business-and-law/school-of-law
+Education,4738,4,Cluster 2 CSP,https://www.une.edu.au/about-une/faculty-of-humanities-arts-social-sciences-and-education/school-of-education
+IT & Computing,9537,3,Cluster 2 CSP,https://www.une.edu.au/about-une/faculty-of-science-agriculture-business-and-law/school-of-science-and-technology
+Health Sciences,9537,3,Cluster 2 CSP,https://www.une.edu.au/about-une/faculty-of-medicine-and-health
+Creative Arts,9537,3,Cluster 2 CSP,https://www.une.edu.au/about-une/faculty-of-humanities-arts-social-sciences-and-education

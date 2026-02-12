@@ -1,11 +1,11 @@
 faculty,annualFee,courseYears,notes,facultyUrl
-Engineering,9537,4,Cluster 3 CSP,
-Science,9537,3,Cluster 3 CSP,
-Business,17399,3,Cluster 1 CSP,
-Arts & Humanities,4738,3,Cluster 2 CSP,
-Medicine,13558,5,Cluster 4 CSP,
-Law,17399,4,Cluster 1 CSP,
-Education,4738,4,Cluster 2 CSP,
-IT & Computing,9537,3,Cluster 2 CSP,
-Health Sciences,9537,3,Cluster 2 CSP,
-Creative Arts,9537,3,Cluster 2 CSP,
+Engineering,9537,4,Cluster 3 CSP,https://www.unsw.edu.au/engineering
+Science,9537,3,Cluster 3 CSP,https://www.unsw.edu.au/science
+Business,17399,3,Cluster 1 CSP,https://www.unsw.edu.au/business
+Arts & Humanities,4738,3,Cluster 2 CSP,https://www.unsw.edu.au/arts-design-architecture
+Medicine,13558,5,Cluster 4 CSP,https://www.unsw.edu.au/medicine
+Law,17399,4,Cluster 1 CSP,https://www.unsw.edu.au/law
+Education,4738,4,Cluster 2 CSP,https://www.unsw.edu.au/education
+IT & Computing,9537,3,Cluster 2 CSP,https://www.unsw.edu.au/engineering
+Health Sciences,9537,3,Cluster 2 CSP,https://www.unsw.edu.au/medicine
+Creative Arts,9537,3,Cluster 2 CSP,https://www.unsw.edu.au/arts-design-architecture
