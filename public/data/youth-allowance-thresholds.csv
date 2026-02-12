@@ -1,0 +1,17 @@
+key,value,description,year
+AGE_MIN,18,Minimum age for Youth Allowance eligibility,2026
+AGE_MAX,24,Maximum age for Youth Allowance eligibility,2026
+PARENTAL_INCOME_FREE_AREA,66722,Parental income free area per year (annual),2026
+PARENTAL_INCOME_REDUCTION_RATE,0.20,Reduction rate per dollar over free area,2026
+PERSONAL_INCOME_FREE_AREA,539,Personal income free area per fortnight,2026
+PERSONAL_INCOME_TIER1_MAX,646,Maximum income for tier 1 reduction per fortnight,2026
+PERSONAL_INCOME_TIER1_REDUCTION_RATE,0.50,Tier 1 reduction rate per dollar over free area,2026
+PERSONAL_INCOME_TIER2_FLAT_REDUCTION,53.50,Tier 2 flat reduction amount,2026
+PERSONAL_INCOME_TIER2_REDUCTION_RATE,0.60,Tier 2 reduction rate per dollar over tier 1 max,2026
+PERSONAL_INCOME_BANK_CAP,13500,Maximum income bank credits,2026
+ASSETS_LIMIT_HOMEOWNER,321500,Asset limit for homeowners,2026
+ASSETS_LIMIT_NON_HOMEOWNER,579500,Asset limit for non-homeowners,2026
+MAX_RATE_SINGLE_AT_HOME,482.40,Maximum fortnightly rate for single living at home,2026
+MAX_RATE_SINGLE_AWAY,677.20,Maximum fortnightly rate for single living away from home,2026
+MAX_RATE_SINGLE_WITH_CHILDREN,854.20,Maximum fortnightly rate for single with children,2026
+MAX_RATE_PARTNERED_NO_CHILDREN,677.20,Maximum fortnightly rate for partnered without children,2026

@@ -3,6 +3,8 @@
  * Implements the complete eligibility and payment calculation logic
  */
 
+import { getDefaultThresholds } from './youth-allowance-thresholds'
+
 export interface YouthAllowanceInput {
   age: number
   studyLoadFullTime: boolean
@@ -55,34 +57,10 @@ export interface YouthAllowanceResult {
   }[]
 }
 
-// 2026 Thresholds
-const THRESHOLDS = {
-  // Age limits
-  AGE_MIN: 18,
-  AGE_MAX: 24,
-  
-  // Parental Income Test
-  PARENTAL_INCOME_FREE_AREA: 66722,
-  PARENTAL_INCOME_REDUCTION_RATE: 0.20, // $0.20 per $1 over threshold
-  
-  // Personal Income Test
-  PERSONAL_INCOME_FREE_AREA: 539, // per fortnight
-  PERSONAL_INCOME_TIER1_MAX: 646, // per fortnight
-  PERSONAL_INCOME_TIER1_REDUCTION_RATE: 0.50, // 50 cents per dollar
-  PERSONAL_INCOME_TIER2_FLAT_REDUCTION: 53.50,
-  PERSONAL_INCOME_TIER2_REDUCTION_RATE: 0.60, // 60 cents per dollar
-  PERSONAL_INCOME_BANK_CAP: 13500, // Maximum credits
-  
-  // Personal Assets Test
-  ASSETS_LIMIT_HOMEOWNER: 321500,
-  ASSETS_LIMIT_NON_HOMEOWNER: 579500,
-  
-  // Maximum Fortnightly Rates (2026)
-  MAX_RATE_SINGLE_AT_HOME: 482.40,
-  MAX_RATE_SINGLE_AWAY: 677.20,
-  MAX_RATE_SINGLE_WITH_CHILDREN: 854.20,
-  MAX_RATE_PARTNERED_NO_CHILDREN: 677.20,
-}
+// Use default thresholds (CSV parsing happens server-side)
+// On client-side, we use defaults. On server-side, thresholds can be loaded from CSV
+// via the API route or server components that import parseThresholdsCSV
+const THRESHOLDS = getDefaultThresholds()
 
 /**
  * Check if student is independent based on various criteria
