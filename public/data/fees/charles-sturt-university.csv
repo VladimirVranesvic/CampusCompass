@@ -1,10 +1,10 @@
 faculty,annualFee,courseYears,notes,facultyUrl
 Engineering,9537,4,Cluster 3 CSP,https://www.csu.edu.au/engineering
-Science,9537,3,Cluster 3 CSP,https://www.csu.edu.au/science
-Business,17399,3,Cluster 1 CSP,https://www.csu.edu.au/business
-Arts & Humanities,4738,3,Cluster 2 CSP,https://www.csu.edu.au/arts
-Law,17399,4,Cluster 1 CSP,https://www.csu.edu.au/legal-studies
-Education,4738,4,Cluster 2 CSP,https://www.csu.edu.au/education
+Science,9537,3,Cluster 3 CSP,https://science-health.csu.edu.au/
+Business,17399,3,Cluster 1 CSP,https://bjbs.csu.edu.au/schools/business
+Arts & Humanities,4738,3,Cluster 2 CSP,https://arts-ed.csu.edu.au/
+Law,17399,4,Cluster 1 CSP,https://bjbs.csu.edu.au/schools/business
+Education,4738,4,Cluster 2 CSP,https://arts-ed.csu.edu.au/
 IT & Computing,9537,3,Cluster 2 CSP,https://www.csu.edu.au/engineering
-Health Sciences,9537,3,Cluster 2 CSP,https://www.csu.edu.au/health
-Creative Arts,9537,3,Cluster 2 CSP,https://www.csu.edu.au/arts
+Health Sciences,9537,3,Cluster 2 CSP,https://science-health.csu.edu.au/
+Creative Arts,9537,3,Cluster 2 CSP,https://arts-ed.csu.edu.au/

@@ -3,7 +3,7 @@ import { generateUACTimelineFromCSV } from "@/lib/data/uac-parser"
 import { calculateCommuteRoute } from "@/lib/data/nsw-trip-planner"
 import { getRentalDataByPostcode, loadRentalData } from "@/lib/data/rental-parser"
 import { parseBenefitsCSV, type BenefitDefinition } from "@/lib/data/benefits-parser"
-import { getAllMatchingFacultiesForUni } from "@/lib/data/fees-parser"
+import { getAllMatchingFacultiesForUni, getAllAvailableFacultiesForUni } from "@/lib/data/fees-parser"
 
 async function calculateCommute(userData: any) {
   const universities = userData.targetUniversities || []
@@ -135,8 +135,16 @@ function calculateFees(userData: any) {
     isPrimaryUniversity: boolean
     facultyUrl?: string
   }
+
+  type UnavailableFacultyWarning = {
+    university: string
+    unavailableFaculties: string[]
+    availableFaculties: string[]
+  }
   
   const byUniversity: Array<UniversityFeeEntry> = []
+  const warnings: UnavailableFacultyWarning[] = []
+  
   universities.forEach((uni: string, uniIndex) => {
     const matchingFaculties = getAllMatchingFacultiesForUni(uni, preferredFields)
     const isFirstUniversity = uniIndex === 0
@@ -160,20 +168,35 @@ function calculateFees(userData: any) {
         
         byUniversity.push(entry)
       })
-    } else {
-      // No CSV data: add fallback entry
-      const isPrimary = isFirstUniversity && primaryPreference !== null
-      const entry: UniversityFeeEntry = {
-        university: uni,
-        faculty: primaryPreference || "General",
-        estimatedAnnualFee: DEFAULT_ANNUAL_FEE,
-        courseYears: DEFAULT_COURSE_YEARS,
-        estimatedTotalFee: DEFAULT_ANNUAL_FEE * DEFAULT_COURSE_YEARS,
-        isPrimary,
-        isPrimaryUniversity: isFirstUniversity,
+
+      // Check if some preferred fields are unavailable
+      const availableFaculties = getAllAvailableFacultiesForUni(uni)
+      const unavailableFaculties = preferredFields.filter(
+        (field) => !availableFaculties.some(
+          (available) => available.trim().toLowerCase() === field.trim().toLowerCase()
+        )
+      )
+
+      if (unavailableFaculties.length > 0) {
+        warnings.push({
+          university: uni,
+          unavailableFaculties,
+          availableFaculties,
+        })
       }
+    } else {
+      // No matching faculties: track as warning instead of creating fallback entry
+      const availableFaculties = getAllAvailableFacultiesForUni(uni)
       
-      byUniversity.push(entry)
+      if (availableFaculties.length > 0) {
+        // University exists but doesn't offer any preferred fields
+        warnings.push({
+          university: uni,
+          unavailableFaculties: preferredFields,
+          availableFaculties,
+        })
+      }
+      // If no CSV data exists at all, we skip adding anything (no fallback entry)
     }
   })
 
@@ -210,6 +233,7 @@ function calculateFees(userData: any) {
       amount: (estimatedAnnualFee * 0.9).toFixed(2),
     },
     byUniversity,
+    unavailableFacultiesWarnings: warnings,
   }
 }
 

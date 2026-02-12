@@ -165,6 +165,18 @@ export function getAllMatchingFacultiesForUni(
   return allRows
 }
 
+/**
+ * Get all available faculties for a university (regardless of preferred fields).
+ * Returns an array of faculty names that the university offers.
+ */
+export function getAllAvailableFacultiesForUni(uniName: string): string[] {
+  const slug = getUniSlug(uniName)
+  if (!slug) return []
+
+  const allRows = parseFeesCSV(slug)
+  return allRows.map((row) => row.faculty)
+}
+
 /** Backward-compatible: returns annual fee only, or null. */
 export function getAnnualFeeForUni(
   uniName: string,
