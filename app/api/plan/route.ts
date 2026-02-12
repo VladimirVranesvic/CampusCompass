@@ -4,6 +4,7 @@ import { calculateCommuteRoute } from "@/lib/data/nsw-trip-planner"
 import { getRentalDataByPostcode, loadRentalData } from "@/lib/data/rental-parser"
 import { parseBenefitsCSV, type BenefitDefinition } from "@/lib/data/benefits-parser"
 import { getAllMatchingFacultiesForUni, getAllAvailableFacultiesForUni } from "@/lib/data/fees-parser"
+// Youth Allowance detailed calculation is now handled in the calculator component on results page
 
 async function calculateCommute(userData: any) {
   const universities = userData.targetUniversities || []
@@ -99,21 +100,60 @@ function evaluateBenefitEligibility(def: BenefitDefinition, userData: any): { el
   return { eligible: true }
 }
 
+function checkBasicYouthAllowanceEligibility(userData: any): { eligible: boolean; reason?: string } {
+  const age = typeof userData.age === 'number' ? userData.age : parseInt(String(userData.age ?? ''), 10)
+  const studyLoadFullTime = userData.studyLoadFullTime === "yes"
+  const concessionalStudyLoad = userData.concessionalStudyLoad === "yes"
+  
+  // Basic eligibility check only
+  if (age < 18 || age > 24) {
+    return { eligible: false, reason: `Age ${age} is outside the eligible range (18-24 years)` }
+  }
+  
+  if (!studyLoadFullTime && !concessionalStudyLoad) {
+    return { eligible: false, reason: "Must be studying full-time (75%+ load) or have concessional study load" }
+  }
+  
+  return { eligible: true }
+}
+
 function checkBenefitsEligibility(userData: any) {
   const definitions = parseBenefitsCSV()
-  if (definitions.length === 0) return []
-
-  return definitions.map((def) => {
-    const { eligible, reason } = evaluateBenefitEligibility(def, userData)
-    return {
-      name: def.name,
-      eligible,
-      ...(def.estimatedAmount && { estimatedAmount: def.estimatedAmount }),
-      ...(reason && { reason }),
-      nextSteps: def.nextSteps,
-      learnMoreUrl: def.learnMoreUrl,
-    }
-  })
+  const benefits: any[] = []
+  
+  // Check basic Youth Allowance eligibility (detailed calculation will be in calculator component)
+  const youthAllowanceEligibility = checkBasicYouthAllowanceEligibility(userData)
+  const youthAllowanceDef = definitions.find(d => d.id === "youth_allowance")
+  
+  if (youthAllowanceDef) {
+    benefits.push({
+      name: youthAllowanceDef.name,
+      eligible: youthAllowanceEligibility.eligible,
+      estimatedAmount: youthAllowanceEligibility.eligible
+        ? "Use calculator below for detailed estimate"
+        : undefined,
+      reason: youthAllowanceEligibility.reason,
+      nextSteps: youthAllowanceDef.nextSteps,
+      learnMoreUrl: youthAllowanceDef.learnMoreUrl,
+    })
+  }
+  
+  // Process other benefits (excluding Youth Allowance)
+  const otherBenefits = definitions
+    .filter(def => def.id !== "youth_allowance")
+    .map((def) => {
+      const { eligible, reason } = evaluateBenefitEligibility(def, userData)
+      return {
+        name: def.name,
+        eligible,
+        ...(def.estimatedAmount && { estimatedAmount: def.estimatedAmount }),
+        ...(reason && { reason }),
+        nextSteps: def.nextSteps,
+        learnMoreUrl: def.learnMoreUrl,
+      }
+    })
+  
+  return [...benefits, ...otherBenefits]
 }
 
 const DEFAULT_ANNUAL_FEE = 15000 // Fallback when no CSV data (AUD)

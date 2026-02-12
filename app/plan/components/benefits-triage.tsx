@@ -3,6 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { CheckCircle2, XCircle, AlertCircle, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { YouthAllowanceCalculator } from "./youth-allowance-calculator"
 
 interface Benefit {
   name: string
@@ -51,6 +52,7 @@ export function BenefitsTriage({ benefits, userData }: BenefitsTriageProps) {
                       <span className="font-bold text-foreground">{benefit.estimatedAmount}</span>
                     </p>
                   )}
+                  
                   <div>
                     <p className="text-sm font-medium mb-2">Next Steps:</p>
                     <ul className="space-y-1">
@@ -73,6 +75,17 @@ export function BenefitsTriage({ benefits, userData }: BenefitsTriageProps) {
                     Learn More
                     <ExternalLink className="ml-2 h-3 w-3" />
                   </Button>
+                  
+                  {/* Youth Allowance Calculator - Embedded directly under the card */}
+                  {benefit.name === "Youth Allowance" && benefit.eligible && (
+                    <div className="mt-6 pt-6 border-t border-lime/20">
+                      <YouthAllowanceCalculator 
+                        userData={userData} 
+                        initialEligible={true}
+                        embedded={true}
+                      />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

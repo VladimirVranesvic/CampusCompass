@@ -30,8 +30,6 @@ const userSchema = z.object({
   siblingsReceivingPayments: z.string().optional(),
   studyLoadFullTime: z.string().min(1, "Please select if studying full-time"),
   concessionalStudyLoad: z.string().optional(),
-  personalIncomeFortnightly: z.string().optional(),
-  significantAssets: z.string().optional(),
   isIndigenous: z.boolean().optional(),
 
   // Preferences
@@ -87,8 +85,6 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
       siblingsReceivingPayments: "",
       studyLoadFullTime: "",
       concessionalStudyLoad: "",
-      personalIncomeFortnightly: "",
-      significantAssets: "",
       isIndigenous: false,
     },
   })
@@ -444,40 +440,6 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
                   </Select>
                 </div>
               )}
-
-              {/* Personal income & assets */}
-              <div>
-                <Label htmlFor="personalIncomeFortnightly">Approximate fortnightly personal income (work/allowances)</Label>
-                <Select
-                  onValueChange={(value) => setValue("personalIncomeFortnightly", value)}
-                  defaultValue={watch("personalIncomeFortnightly")}
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select (optional)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="under-190">Under $190</SelectItem>
-                    <SelectItem value="190-539">$190 – $539</SelectItem>
-                    <SelectItem value="over-539">Over $539</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="significantAssets">Do you have significant assets (e.g. savings, investments, car over thresholds)?</Label>
-                <Select
-                  onValueChange={(value) => setValue("significantAssets", value)}
-                  defaultValue={watch("significantAssets")}
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select (optional)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="yes">Yes</SelectItem>
-                    <SelectItem value="no">No</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
 
               {/* Indigenous status */}
               <div className="flex items-center space-x-2">
