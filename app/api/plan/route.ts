@@ -265,8 +265,8 @@ function calculateFees(userData: any) {
     estimatedTotalFee: estimatedAnnualFee * courseYearsForTotal,
     hecsHelp: {
       available: true,
-      repaymentThreshold: 51950, // 2024-25 threshold
-      estimatedRepayment: "Starts when income exceeds threshold",
+      repaymentThreshold: 67000, // 2025-26 threshold (repayment on income above this)
+      estimatedRepayment: "Starts when income exceeds threshold (2025-26 rates apply)",
     },
     upfrontPayment: {
       discount: "10% discount if paid upfront",
