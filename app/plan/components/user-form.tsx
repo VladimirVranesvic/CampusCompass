@@ -139,6 +139,27 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
     }
   }
 
+  const stepHeadings: { title: string; description: string }[] = [
+    {
+      title: "Where you're from & your age",
+      description: "We use this to tailor local services, commute options, and age-based support like Youth Allowance.",
+    },
+    {
+      title: "Your study plans",
+      description: "This helps us match you to course fees, application timelines, and faculty-specific information.",
+    },
+    {
+      title: "Living situation",
+      description: "We use this to show relevant payments (e.g. Rent Assistance, Tertiary Access Payment) and accommodation options.",
+    },
+    {
+      title: "Income & study load",
+      description: "This lets us estimate Youth Allowance and other payments and show eligibility for government support.",
+    },
+  ]
+
+  const currentHeading = stepHeadings[step - 1]
+
   return (
     <section className="bg-background py-16 md:py-24">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
@@ -164,6 +185,16 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Step subheading */}
+          <div className="pb-2 border-b">
+            <h2 className="text-xl font-semibold tracking-tight">
+              {currentHeading.title}
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {currentHeading.description}
+            </p>
+          </div>
+
           {/* Step 1: Basic Info */}
           {step === 1 && (
             <div className="space-y-6">
