@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CheckCircle2, XCircle, AlertCircle, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { YouthAllowanceCalculator } from "./youth-allowance-calculator"
+import { RentAssistanceCalculator } from "./rent-assistance-calculator"
 
 interface Benefit {
   name: string
@@ -84,6 +85,12 @@ export function BenefitsTriage({ benefits, userData }: BenefitsTriageProps) {
                         initialEligible={true}
                         embedded={true}
                       />
+                    </div>
+                  )}
+                  {/* Rent Assistance estimator - only when eligible (e.g. renting/moving_out) */}
+                  {benefit.name === "Rent Assistance" && benefit.eligible && (
+                    <div className="mt-6 pt-6 border-t border-lime/20">
+                      <RentAssistanceCalculator userData={userData} embedded={true} />
                     </div>
                   )}
                 </div>
