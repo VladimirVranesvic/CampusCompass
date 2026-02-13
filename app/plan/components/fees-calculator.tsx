@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { DollarSign, GraduationCap, Calculator, ChevronDown, ChevronUp, ExternalLink, AlertTriangle } from "lucide-react"
+import { DollarSign, GraduationCap, ChevronDown, ChevronUp, ExternalLink, AlertTriangle } from "lucide-react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Button } from "@/components/ui/button"
 
@@ -139,13 +139,13 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-muted-foreground">Annual Fee</p>
+                <p className="text-sm text-muted-foreground">Estimated Annual Fee</p>
                 <p className="text-2xl font-bold">
                   ${primarySummaryEntry.estimatedAnnualFee.toLocaleString()}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Total Cost</p>
+                <p className="text-sm text-muted-foreground">Estimated Total (course duration)</p>
                 <p className="text-2xl font-bold">
                   ${primarySummaryEntry.estimatedTotalFee.toLocaleString()}
                 </p>
@@ -154,17 +154,8 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
           </div>
         )}
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 rounded-lg border">
-            <div className="flex items-center gap-2 mb-2">
-              <Calculator className="h-4 w-4 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Estimated Annual Fee</p>
-            </div>
-            <p className="text-2xl font-bold">${fees.estimatedAnnualFee.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground mt-1">Based on primary preference</p>
-          </div>
-
+        {/* Summary card: total only (annual fee shown in primary box above) */}
+        <div className="grid grid-cols-1 gap-4">
           <div className="p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
               <GraduationCap className="h-4 w-4 text-muted-foreground" />
