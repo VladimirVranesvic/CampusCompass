@@ -253,7 +253,7 @@ export function YouthAllowanceCalculator({ userData, initialEligible = false, em
         
         {/* Calculation Results */}
         {isCalculated && calculationResult && (
-          <div className="mt-6 p-4 rounded-lg border-2 border-lime/40 bg-lime/10">
+          <div className="mt-6 p-4 rounded-lg border-2 border-lime/40 bg-sage/50">
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <Info className="h-5 w-5" />
               Calculation Results

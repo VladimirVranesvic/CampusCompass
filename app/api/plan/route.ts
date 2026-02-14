@@ -147,6 +147,25 @@ async function getRentalData(postcode: string, locationLabel?: string) {
   return getMockRentalData(pc, locationLabel)
 }
 
+/** Map form living-situation labels to canonical values used in benefits CSV */
+function normalizeLivingSituationForBenefits(formValue: string | undefined): string[] {
+  if (!formValue) return []
+  switch (formValue) {
+    case "Staying at home":
+      return ["home"]
+    case "Renting/Moving out":
+      return ["renting", "moving_out"]
+    case "On-campus accommodation":
+      return ["on-campus"]
+    case "Remote/Regional area":
+      return ["remote"]
+    case "Not sure yet":
+      return ["unsure"]
+    default:
+      return [formValue]
+  }
+}
+
 function evaluateBenefitEligibility(def: BenefitDefinition, userData: any): { eligible: boolean; reason?: string } {
   const age = typeof userData.age === 'number' ? userData.age : parseInt(String(userData.age ?? ''), 10)
   const income = userData.householdIncome
@@ -168,12 +187,22 @@ function evaluateBenefitEligibility(def: BenefitDefinition, userData: any): { el
     }
   }
   if (def.livingSituation != null && def.livingSituation.length > 0) {
-    if (!livingSituation || !def.livingSituation.includes(livingSituation)) {
+    const normalizedLiving = normalizeLivingSituationForBenefits(livingSituation)
+    const matches = normalizedLiving.some((n) => def.livingSituation!.includes(n))
+    if (!livingSituation || !matches) {
       return { eligible: false, reason: "Living situation may not meet eligibility" }
     }
   }
   if (def.requiresIndigenous === true && !isIndigenous) {
     return { eligible: false, reason: "Eligibility is for Aboriginal and Torres Strait Islander students" }
+  }
+  // Tertiary Access Payment: only for users in Remote/Regional area
+  if (def.id === "tertiary_access_payment") {
+    const normalizedLiving = normalizeLivingSituationForBenefits(livingSituation)
+    if (!normalizedLiving.includes("remote")) {
+      return { eligible: false, reason: "For students in a remote or regional area" }
+    }
+    return { eligible: true }
   }
   if (def.requiresMovingForStudy === true && !movingForStudy) {
     return { eligible: false, reason: "For students relocating to study" }
@@ -395,7 +424,7 @@ export async function POST(request: NextRequest) {
         const { postcode, locationLabel } = getRentalPostcodeAndLabel(userData)
         return getRentalData(postcode, locationLabel)
       })(),
-      Promise.resolve(checkBenefitsEligibility({ ...userData, movingForStudy: userData.livingSituation === 'moving_out' })),
+      Promise.resolve(checkBenefitsEligibility({ ...userData, movingForStudy: userData.livingSituation === 'moving_out' || userData.livingSituation === 'Renting/Moving out' })),
       Promise.resolve(calculateFees(userData)),
       Promise.resolve(generateChecklist(userData)),
     ])

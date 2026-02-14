@@ -75,7 +75,7 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
   const renderFeeEntry = (entry: (typeof fees.byUniversity)[0]) => (
     <div
       key={`${entry.university}-${entry.faculty}`}
-      className="flex items-center justify-between gap-3 p-4 rounded-lg border-2 border-lime/40 bg-lime/10"
+      className="flex items-center justify-between gap-3 p-4 rounded-lg border-2 border-lime/40 bg-background"
     >
       <div className="min-w-0 flex-1">
         <p className="font-medium">
@@ -124,7 +124,7 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
       <CardContent className="space-y-6">
         {/* Primary Summary - Big Display */}
         {primarySummaryEntry && (
-          <div className="p-6 rounded-lg border-2 border-lime/40 bg-lime/10">
+          <div className="p-6 rounded-lg border-2 border-lime/40 bg-sage/50">
             <div className="mb-4">
               <p className="text-sm text-muted-foreground mb-1">Primary Preference</p>
               <p className="text-xl font-bold">
@@ -134,14 +134,21 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
                 {primarySummaryEntry.courseYears} {primarySummaryEntry.courseYears === 1 ? "year" : "years"}
               </p>
               {primarySummaryEntry.facultyUrl && (
-                <a
-                  href={primarySummaryEntry.facultyUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-sm text-foreground hover:underline mt-2"
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2 border-lime bg-lime/20 text-foreground hover:bg-lime-hover hover:border-lime"
+                  asChild
                 >
-                  Learn more about this faculty <ExternalLink className="size-3.5" />
-                </a>
+                  <a
+                    href={primarySummaryEntry.facultyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5"
+                  >
+                    Learn more about this faculty <ExternalLink className="size-3.5" />
+                  </a>
+                </Button>
               )}
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -182,6 +189,21 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
               <span className="font-medium">{fees.hecsHelp.estimatedRepayment}</span>
             </p>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-3 border-lime bg-lime/20 text-foreground hover:bg-lime-hover hover:border-lime"
+            asChild
+          >
+            <a
+              href="https://www.studyassist.gov.au/help-loans/hecs-help"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5"
+            >
+              Learn more <ExternalLink className="size-3" />
+            </a>
+          </Button>
         </div>
 
         {/* Upfront Payment */}
