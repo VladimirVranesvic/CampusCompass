@@ -63,6 +63,25 @@ function getMockRentalData(postcode: string) {
   }
 }
 
+/** Map form living-situation labels to canonical values used in benefits CSV */
+function normalizeLivingSituationForBenefits(formValue: string | undefined): string[] {
+  if (!formValue) return []
+  switch (formValue) {
+    case "Staying at home":
+      return ["home"]
+    case "Renting/Moving out":
+      return ["renting", "moving_out"]
+    case "On-campus accommodation":
+      return ["on-campus"]
+    case "Remote/Regional area":
+      return ["remote"]
+    case "Not sure yet":
+      return ["unsure"]
+    default:
+      return [formValue]
+  }
+}
+
 function evaluateBenefitEligibility(def: BenefitDefinition, userData: any): { eligible: boolean; reason?: string } {
   const age = typeof userData.age === 'number' ? userData.age : parseInt(String(userData.age ?? ''), 10)
   const income = userData.householdIncome
@@ -84,7 +103,9 @@ function evaluateBenefitEligibility(def: BenefitDefinition, userData: any): { el
     }
   }
   if (def.livingSituation != null && def.livingSituation.length > 0) {
-    if (!livingSituation || !def.livingSituation.includes(livingSituation)) {
+    const normalizedLiving = normalizeLivingSituationForBenefits(livingSituation)
+    const matches = normalizedLiving.some((n) => def.livingSituation!.includes(n))
+    if (!livingSituation || !matches) {
       return { eligible: false, reason: "Living situation may not meet eligibility" }
     }
   }
@@ -308,7 +329,7 @@ export async function POST(request: NextRequest) {
       Promise.resolve(generateUACTimelineFromCSV(userData)),
       calculateCommute(userData),
       Promise.resolve(getMockRentalData(userData.postcode)),
-      Promise.resolve(checkBenefitsEligibility({ ...userData, movingForStudy: userData.livingSituation === 'moving_out' })),
+      Promise.resolve(checkBenefitsEligibility({ ...userData, movingForStudy: userData.livingSituation === 'moving_out' || userData.livingSituation === 'Renting/Moving out' })),
       Promise.resolve(calculateFees(userData)),
       Promise.resolve(generateChecklist(userData)),
     ])
