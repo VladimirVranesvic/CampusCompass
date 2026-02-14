@@ -1,7 +1,8 @@
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { MapPin, Clock, DollarSign, Train } from "lucide-react"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { MapPin, Clock, DollarSign, Train, ChevronDown } from "lucide-react"
 
 interface CommutePlannerProps {
   commuteData: Array<{
@@ -9,6 +10,8 @@ interface CommutePlannerProps {
     fromPostcode: string
     travelTime: number
     cost: string
+    costUncapped?: string
+    costIsCapped?: boolean
     transportOptions: string[]
     accessibility: string
     distance?: number
@@ -29,7 +32,7 @@ export function CommutePlanner({ commuteData, userData }: CommutePlannerProps) {
         <CardTitle>Commute & Travel Planner</CardTitle>
         <CardDescription>
           Travel times and costs from your postcode ({userData.postcode}) to your target
-          universities
+          universities. Costs use Opal fare caps (e.g. train max $5.36), so longer trips may show the same capped amount.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -66,51 +69,69 @@ export function CommutePlanner({ commuteData, userData }: CommutePlannerProps) {
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="text-sm text-muted-foreground">Estimated Cost</p>
-                    <p className="font-medium">${commute.cost} per trip</p>
+                    <p className="font-medium">
+                      ${commute.cost} per trip
+                      {commute.costIsCapped && commute.costUncapped && (
+                        <span className="ml-1.5 text-xs font-normal text-muted-foreground">
+                          (Opal cap; uncapped ~${commute.costUncapped})
+                        </span>
+                      )}
+                    </p>
                   </div>
                 </div>
               </div>
-              {commute.routeDetails && (
-                <div className="pt-2 border-t">
-                  <p className="text-sm font-medium mb-2">Route Breakdown</p>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+
+              <Collapsible>
+                <CollapsibleTrigger className="flex w-full items-center justify-between gap-2 rounded-lg border bg-muted/30 px-4 py-3 text-left text-sm font-medium transition-colors hover:bg-muted/50 [&[data-state=open]>svg]:rotate-180">
+                  Route breakdown
+                  <ChevronDown className="h-4 w-4 shrink-0 transition-transform" />
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="space-y-3 pt-3">
+                    {commute.routeDetails && (
+                      <div>
+                        <p className="text-sm font-medium mb-2">Route Breakdown</p>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                          <div>
+                            <span className="text-muted-foreground">Walking: </span>
+                            <span className="font-medium">{commute.routeDetails.walkingToStop} min</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Transit: </span>
+                            <span className="font-medium">{commute.routeDetails.transitTime} min</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Transfers: </span>
+                            <span className="font-medium">{commute.routeDetails.transfers}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     <div>
-                      <span className="text-muted-foreground">Walking: </span>
-                      <span className="font-medium">{commute.routeDetails.walkingToStop} min</span>
+                      <p className="text-sm text-muted-foreground mb-1">Transport Options</p>
+                      <div className="flex flex-wrap gap-2">
+                        {commute.transportOptions.map((option) => (
+                          <span
+                            key={option}
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-sm"
+                          >
+                            <Train className="h-3 w-3" />
+                            {option}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-muted-foreground">Transit: </span>
-                      <span className="font-medium">{commute.routeDetails.transitTime} min</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Transfers: </span>
-                      <span className="font-medium">{commute.routeDetails.transfers}</span>
+
+                    <div className="pt-2 border-t">
+                      <p className="text-sm">
+                        <span className="text-muted-foreground">Accessibility: </span>
+                        <span className="font-medium">{commute.accessibility}</span>
+                      </p>
                     </div>
                   </div>
-                </div>
-              )}
-
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Transport Options</p>
-                <div className="flex flex-wrap gap-2">
-                  {commute.transportOptions.map((option) => (
-                    <span
-                      key={option}
-                      className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-sm"
-                    >
-                      <Train className="h-3 w-3" />
-                      {option}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="pt-2 border-t">
-                <p className="text-sm">
-                  <span className="text-muted-foreground">Accessibility: </span>
-                  <span className="font-medium">{commute.accessibility}</span>
-                </p>
-              </div>
+                </CollapsibleContent>
+              </Collapsible>
             </div>
           ))}
         </div>

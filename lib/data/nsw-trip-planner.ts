@@ -41,6 +41,8 @@ export interface RouteResult {
   travelTime: number // minutes
   distance: number // km
   cost: string
+  costUncapped?: string
+  costIsCapped?: boolean
   transportOptions: string[]
   accessibility: string
   routeDetails?: {
@@ -216,7 +218,7 @@ function parseJourneyToRouteResult(
     : straightLineDistance * 1.3  // Add 30% for non-straight routes
 
   // Calculate cost based on actual route distance and transport modes
-  const cost = calculateOpalCost(distance, travelTime, transportOptions)
+  const { cost, uncappedEstimate, isCapped } = calculateOpalCostWithDetails(distance, travelTime, transportOptions)
 
   // Get origin and destination stop names
   const originStop = legs[0]?.origin?.name || null
@@ -230,6 +232,8 @@ function parseJourneyToRouteResult(
     travelTime: Math.round(travelTime),
     distance: Math.round(distance * 10) / 10,
     cost: cost.toFixed(2),
+    costUncapped: uncappedEstimate.toFixed(2),
+    costIsCapped: isCapped,
     transportOptions: transportOptions.length > 0 ? transportOptions : ['Train', 'Bus'],
     accessibility: 'Check with transport provider',
     routeDetails: {
@@ -270,29 +274,39 @@ function toRad(degrees: number): number {
 }
 
 function calculateOpalCost(distance: number, travelTime: number, transportModes: string[] = []): number {
-  // Opal card rates (2024-25):
-  // Train/Metro: $3.73-$5.36 (distance-based)
-  // Bus: $2.50-$4.90 (distance-based)
-  // Ferry: $6.20-$9.20 (distance-based)
-  
+  return calculateOpalCostWithDetails(distance, travelTime, transportModes).cost
+}
+
+function calculateOpalCostWithDetails(
+  distance: number,
+  _travelTime: number,
+  transportModes: string[] = []
+): { cost: number; uncappedEstimate: number; isCapped: boolean } {
+  // APPROXIMATION: Opal uses distance BANDS with fixed fares per band, not a continuous per-km rate.
+  // Official structure: transportnsw.info/tickets-fares/fares, IPART Opal determinations.
+  // The values below are a simple linear approximation (base + perKm) to get a rough estimate;
+  // min/max are in the ballpark of band endpoints. For accurate fares use official band tables.
+  // Train/Metro: approx $3.73-$5.36 (perKm 0.25 is approximate, not from official docs)
+  // Bus: approx $2.50-$4.90; Ferry: approx $6.20-$9.20
   const hasFerry = transportModes.includes('Ferry')
   const hasTrain = transportModes.includes('Train') || transportModes.includes('Metro')
-  const hasBus = transportModes.includes('Bus')
-  
+
   let baseCost = 2.50
   let perKm = 0.20
   let maxCost = 4.90
-  
+
   if (hasFerry) {
     baseCost = 6.20
     perKm = 0.30
     maxCost = 9.20
   } else if (hasTrain) {
     baseCost = 3.73
-    perKm = 0.25
+    perKm = 0.25  // approximate; official fares use distance bands (0–10 km, 10–20 km, etc.)
     maxCost = 5.36
   }
-  
-  const cost = baseCost + (distance * perKm)
-  return Math.min(cost, maxCost)
+
+  const uncappedEstimate = baseCost + distance * perKm
+  const cost = Math.min(uncappedEstimate, maxCost)
+  const isCapped = uncappedEstimate >= maxCost
+  return { cost, uncappedEstimate, isCapped }
 }

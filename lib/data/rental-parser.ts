@@ -111,7 +111,6 @@ export function loadRentalData(xlsxPath?: string): RentalData[] {
   
   try {
     rentalDataCache = parseRentalXLSX(path)
-    console.log(`Loaded ${rentalDataCache.length} rental records`)
     return rentalDataCache
   } catch (error) {
     console.error('Error loading rental data:', error)

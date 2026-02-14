@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import type { UpdatePlanBody } from "@/lib/types/plan"
 
 export async function GET(
   _request: NextRequest,
@@ -43,14 +44,14 @@ export async function PATCH(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  let body: { name?: string; user_data?: Record<string, unknown> }
+  let body: UpdatePlanBody
   try {
     body = await request.json()
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
   }
 
-  const updates: { name?: string; user_data?: Record<string, unknown> } = {}
+  const updates: UpdatePlanBody = {}
   if (body.name != null) updates.name = String(body.name).trim()
   if (body.user_data != null && typeof body.user_data === "object") updates.user_data = body.user_data
   if (Object.keys(updates).length === 0) {

@@ -1,19 +1,6 @@
 
 # CampusCompass
 
-## Database: Saved plans
-
-To let users save and return to plans, create the `plans` table in Supabase:
-
-1. Open your [Supabase](https://supabase.com) project → **SQL Editor** → **New query**.
-2. Copy the contents of **`supabase/plans-schema.sql`** and run it.
-
-This creates the `plans` table and Row Level Security (RLS) so each user only sees their own plans. The app expects:
-
-- **Env**: `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local`.
-
----
-
 # Functionalities
 
 ## UAC Deadlines
@@ -34,8 +21,8 @@ UAC Dates - https://www.uac.edu.au/assets/documents/ug-fact-sheets/ug-fact-sheet
 
 
 ### What can be improved:
-1.Documentation 
-    - README still describes old TransXChange approach
+1. Documentation
+    - Could be expanded for travel planner and other modules
 
 2. Error Handling 
     - Generic errors instead of specific messages

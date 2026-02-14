@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { generateUACTimelineFromCSV } from "@/lib/data/uac-parser"
 import { calculateCommuteRoute } from "@/lib/data/nsw-trip-planner"
-import { getRentalDataByPostcode, loadRentalData } from "@/lib/data/rental-parser"
 import { parseBenefitsCSV, type BenefitDefinition } from "@/lib/data/benefits-parser"
 import { getAllMatchingFacultiesForUni, getAllAvailableFacultiesForUni } from "@/lib/data/fees-parser"
 // Youth Allowance detailed calculation is now handled in the calculator component on results page
@@ -19,6 +18,8 @@ async function calculateCommute(userData: any) {
           fromPostcode: route.fromPostcode,
           travelTime: route.travelTime,
           cost: route.cost,
+          costUncapped: route.costUncapped,
+          costIsCapped: route.costIsCapped,
           transportOptions: route.transportOptions,
           accessibility: route.accessibility,
           distance: route.distance,
@@ -32,6 +33,8 @@ async function calculateCommute(userData: any) {
           fromPostcode: userData.postcode,
           travelTime: 45, // fallback
           cost: "5.00",
+          costUncapped: undefined,
+          costIsCapped: undefined,
           transportOptions: ["Train", "Bus"],
           accessibility: "Unknown",
           distance: 20,
@@ -42,13 +45,8 @@ async function calculateCommute(userData: any) {
   
   return routes
 }
-function getRentalData(postcode: string) {
-  // Using mock data until rental data is moved to Supabase or CSV
-  return getMockRentalData(postcode)
-}
-
 function getMockRentalData(postcode: string) {
-  // Fallback mock data
+  // Fallback mock data until rental data is moved to Supabase or CSV
   return {
     postcode,
     medianWeeklyRent: {
@@ -309,7 +307,7 @@ export async function POST(request: NextRequest) {
     ] = await Promise.all([
       Promise.resolve(generateUACTimelineFromCSV(userData)),
       calculateCommute(userData),
-      Promise.resolve(getRentalData(userData.postcode)),
+      Promise.resolve(getMockRentalData(userData.postcode)),
       Promise.resolve(checkBenefitsEligibility({ ...userData, movingForStudy: userData.livingSituation === 'moving_out' })),
       Promise.resolve(calculateFees(userData)),
       Promise.resolve(generateChecklist(userData)),
