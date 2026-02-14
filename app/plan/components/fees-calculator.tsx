@@ -124,7 +124,7 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
       <CardContent className="space-y-6">
         {/* Primary Summary - Big Display */}
         {primarySummaryEntry && (
-          <div className="p-6 rounded-lg border-2 border-lime/40 bg-lime/10">
+          <div className="p-6 rounded-lg border-2 border-lime/40 bg-sage/50">
             <div className="mb-4">
               <p className="text-sm text-muted-foreground mb-1">Primary Preference</p>
               <p className="text-xl font-bold">

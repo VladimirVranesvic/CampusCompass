@@ -153,7 +153,7 @@ export function RentAssistanceCalculator({ userData, embedded = false }: RentAss
       </Collapsible>
 
       {result && (
-        <div className="mt-6 p-4 rounded-lg border-2 border-lime/40 bg-lime/10 space-y-4">
+        <div className="mt-6 p-4 rounded-lg border-2 border-lime/40 bg-sage/50 space-y-4">
           <h4 className="font-semibold flex items-center gap-2">
             <Home className="h-4 w-4" />
             Result

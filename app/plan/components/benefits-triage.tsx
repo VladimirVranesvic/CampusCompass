@@ -43,7 +43,7 @@ export function BenefitsTriage({ benefits, userData }: BenefitsTriageProps) {
             </h3>
             <div className="space-y-4">
               {eligibleBenefits.map((benefit, index) => (
-                <div key={index} className="p-4 rounded-lg border-2 border-lime/40 bg-lime/15 space-y-3">
+                <div key={index} className="p-4 rounded-lg border-2 border-lime/40 bg-sage/50 space-y-3">
                   <div className="flex items-start justify-between">
                     <h4 className="font-semibold">{benefit.name}</h4>
                     <CheckCircle2 className="h-6 w-6 text-lime shrink-0" />
