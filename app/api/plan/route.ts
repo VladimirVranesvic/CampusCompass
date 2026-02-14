@@ -278,65 +278,20 @@ function calculateFees(userData: any) {
 }
 
 function generateChecklist(userData: any) {
-  const checklist = []
+  const septemberRound2Deadline = "2025-08-21"
 
-  // Pre-application
-  checklist.push({
-    category: "Pre-Application",
-    items: [
-      { task: "Research universities and courses", dueDate: null, completed: false },
-      { task: "Attend university open days", dueDate: null, completed: false },
-      { task: "Check entry requirements", dueDate: null, completed: false },
-    ],
-  })
-
-  // UAC Application - using 2026 dates from CSV
-  const septemberRound2Deadline = "2025-08-21" // September Round 2 application deadline (from CSV)
-  checklist.push({
-    category: "UAC Application",
-    items: [
-      { task: "Create UAC account", dueDate: "2025-04-01", completed: false },
-      { task: "Submit application by deadline (September Round 2)", dueDate: septemberRound2Deadline, completed: false },
-      { task: "Pay application fee", dueDate: septemberRound2Deadline, completed: false },
-      { task: "Upload required documents", dueDate: null, completed: false },
-      { task: "Change preferences (if needed)", dueDate: null, completed: false },
-    ],
-  })
-
-  // Benefits & Support
-  checklist.push({
-    category: "Benefits & Support",
-    items: [
-      { task: "Apply for Youth Allowance (if eligible)", dueDate: null, completed: false },
-      { task: "Apply for Opal Concession Card", dueDate: null, completed: false },
-      { task: "Research scholarships", dueDate: null, completed: false },
-    ],
-  })
-
-  // Accommodation
-  if (userData.livingSituation === "renting" || userData.livingSituation === "unsure") {
-    checklist.push({
-      category: "Accommodation",
+  return [
+    {
+      category: "Your next steps",
       items: [
-        { task: "Research rental options", dueDate: null, completed: false },
-        { task: "Visit potential properties", dueDate: null, completed: false },
-        { task: "Prepare rental application documents", dueDate: null, completed: false },
+        { task: "Create UAC account", dueDate: null, completed: false },
+        { task: "Research universities and courses", dueDate: null, completed: false },
+        { task: "Submit application by deadline", dueDate: null, completed: false },
+        { task: "Apply for Youth Allowance (if eligible)", dueDate: null, completed: false },
+        { task: "Accept offer and complete enrolment", dueDate: null, completed: false },
       ],
-    })
-  }
-
-  // Pre-Enrolment
-  checklist.push({
-    category: "Pre-Enrolment",
-    items: [
-      { task: "Accept offer (if received)", dueDate: null, completed: false },
-      { task: "Complete enrolment", dueDate: null, completed: false },
-      { task: "Organize student ID", dueDate: null, completed: false },
-      { task: "Set up student email", dueDate: null, completed: false },
-    ],
-  })
-
-  return checklist
+    },
+  ]
 }
 
 export async function POST(request: NextRequest) {

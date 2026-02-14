@@ -1,4 +1,19 @@
 
+# CampusCompass
+
+## Database: Saved plans
+
+To let users save and return to plans, create the `plans` table in Supabase:
+
+1. Open your [Supabase](https://supabase.com) project → **SQL Editor** → **New query**.
+2. Copy the contents of **`supabase/plans-schema.sql`** and run it.
+
+This creates the `plans` table and Row Level Security (RLS) so each user only sees their own plans. The app expects:
+
+- **Env**: `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local`.
+
+---
+
 # Functionalities
 
 ## UAC Deadlines
@@ -103,4 +118,22 @@ Trip API - https://opendata.transport.nsw.gov.au/data/dataset/trip-planner-apis
 Rental Prices - https://www.nsw.gov.au/housing-and-construction/rental-forms-surveys-and-data/rental-bond-data
 University Accomidation data
     1. Univerisity of Sydney - 
-    2. University
+    2. University of New South Wales
+    3. Macquaire University
+    4. University of Technology Sydney
+    5. Australian Catholic University 
+    6. Western Sydney University
+    7. Southern Cross University 
+
+
+---
+
+## Course Prefeneces
+
+### Soruces
+- https://www.studyassist.gov.au/financial-and-study-support/commonwealth-supported-places/student-contribution-amounts
+
+
+
+### Other tools
+- https://www.uac.edu.au/atar-compass/

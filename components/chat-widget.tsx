@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils"
 type Message = { role: "user" | "assistant"; content: string }
 
 export function ChatWidget() {
-  const [isOpen, setIsOpen] = useState(true)
+  const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)

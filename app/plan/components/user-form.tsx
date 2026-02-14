@@ -11,11 +11,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Progress } from "@/components/ui/progress"
 import { ChevronRight, ChevronLeft, Loader2 } from "lucide-react"
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
+import { Info } from "lucide-react"
 
 const userSchema = z.object({
   // Basic Info
   postcode: z.string().regex(/^\d{4}$/, "Invalid postcode (must be 4 digits)"),
   age: z.string().min(1, "Age is required"),
+  australianCitizenOrPR: z.enum(["yes", "no"]).or(z.literal("")).refine((v) => v !== "", "Please select Yes or No"),
+  applicantType: z.enum(["year-11", "year-12", "post-school"])
+  .or(z.literal(""))
+  .refine((v) => v !== "", "Please select applicant type"),
+  consideredIndependent: z.enum(["yes", "no", "unsure"])
+  .or(z.literal(""))
+  .refine((v) => v !== "", "Please select Yes, No, or Unsure"),
   
   // Education
   highestEducation: z.string().min(1, "Please select your highest education level"),
@@ -24,9 +33,13 @@ const userSchema = z.object({
   
   // Living Situation
   livingSituation: z.string().min(1, "Please select living situation"),
+  rentalBudget: z.string().optional(),
 
   // Government subsidy eligibility (Step 4)
   householdIncome: z.string().min(1, "Please select income range"),
+  personalIncomeFortnightly: z.string().optional(),
+  significantAssets: z.string().optional(),
+  significantAssetsValue: z.string().optional(),
   siblingsReceivingPayments: z.string().optional(),
   studyLoadFullTime: z.string().min(1, "Please select if studying full-time"),
   concessionalStudyLoad: z.string().optional(),
@@ -40,7 +53,6 @@ const userSchema = z.object({
 type UserData = z.infer<typeof userSchema>
 
 const universities = [
-  "Australian Catholic University",
   "University of Sydney",
   "UNSW Sydney",
   "University of Technology Sydney",
@@ -51,6 +63,7 @@ const universities = [
   "Charles Sturt University",
   "Southern Cross University",
   "University of New England",
+  "Australian Catholic University",
 ]
 
 const studyFields = [
@@ -79,9 +92,15 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
     resolver: zodResolver(userSchema),
     defaultValues: {
       highestEducation: "",
+      australianCitizenOrPR: "yes",
+      consideredIndependent: "unsure",
+      applicantType: "year-11",
       targetUniversities: [],
       preferredFields: [],
       householdIncome: "",
+      personalIncomeFortnightly: "",
+      significantAssets: "",
+      significantAssetsValue: "",
       siblingsReceivingPayments: "",
       studyLoadFullTime: "",
       concessionalStudyLoad: "",
@@ -115,7 +134,7 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
     let isValid = false
     
     if (step === 1) {
-      isValid = await form.trigger(["postcode", "age"])
+      isValid = await form.trigger(["postcode", "age", "australianCitizenOrPR", "applicantType", "consideredIndependent"])
     } else if (step === 2) {
       isValid = await form.trigger(["highestEducation", "targetUniversities", "preferredFields"])
     } else if (step === 3) {
@@ -141,20 +160,20 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
 
   const stepHeadings: { title: string; description: string }[] = [
     {
-      title: "Where you're from & your age",
+      title: "Basic Personal Information",
       description: "We use this to tailor local services, commute options, and age-based support like Youth Allowance.",
     },
     {
-      title: "Your study plans",
+      title: "Your Course Preferences",
       description: "This helps us match you to course fees, application timelines, and faculty-specific information.",
     },
     {
-      title: "Living situation",
-      description: "We use this to show relevant payments (e.g. Rent Assistance, Tertiary Access Payment) and accommodation options.",
+      title: "Living Situation",
+      description: "We use this to show relevant housing information and accommodation options.",
     },
     {
-      title: "Income & study load",
-      description: "This lets us estimate Youth Allowance and other payments and show eligibility for government support.",
+      title: "Government subsidy eligibility",
+      description: "This helps us determine your eligibility for government subsidies and support.",
     },
   ]
 
@@ -181,7 +200,7 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
               {Math.round((step / totalSteps) * 100)}%
             </span>
           </div>
-          <Progress value={(step / totalSteps) * 100} className="h-2" />
+          <Progress value={(step / totalSteps) * 100} className="h-2 progress-lime" />
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -198,14 +217,91 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
           {/* Step 1: Basic Info */}
           {step === 1 && (
             <div className="space-y-6">
+
               <div>
-                <Label htmlFor="postcode">Postcode *</Label>
+                <div className="flex items-center gap-1.5">
+                  <Label htmlFor="age" className="font-bold">Age *</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex shrink-0 cursor-help text-muted-foreground hover:text-foreground" aria-label="More info">
+                        <Info className="size-4" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-xs">
+                      We use your age to show age-based support like Youth Allowance (typically 18–24) and other eligibility.
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Input
+                  id="age"
+                  type="number"
+                  {...register("age")}
+                  placeholder="18"
+                  min={16}
+                  max={99}
+                  className="mt-2 w-18"
+                />
+                {errors.age && (
+                  <p className="mt-1 text-sm text-destructive">
+                    {errors.age.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <Label htmlFor="applicantType" className="font-bold">Applicant type *</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex shrink-0 cursor-help text-muted-foreground hover:text-foreground" aria-label="More info">
+                        <Info className="size-4" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-xs">
+                      Whether you're in Year 11, Year 12, or applying after school affects timelines and options.
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Select
+                  value={watch("applicantType") ?? ""}
+                  onValueChange={(value) => setValue("applicantType", value as "year-11" | "year-12" | "post-school")}
+                >
+                  <SelectTrigger id="applicantType" className="mt-2 w-full max-w-xs">
+                    <SelectValue placeholder="Select applicant type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="year-11">Year 11</SelectItem>
+                    <SelectItem value="year-12">Year 12</SelectItem>
+                    <SelectItem value="post-school">Post-school applicant</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.applicantType && (
+                  <p className="mt-1 text-sm text-destructive">
+                    {errors.applicantType.message}
+                  </p>
+                )}
+              </div>
+            
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <Label htmlFor="postcode" className="font-bold">Current dwelling (Postcode) *</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex shrink-0 cursor-help text-muted-foreground hover:text-foreground" aria-label="More info">
+                        <Info className="size-4" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-xs">
+                      Your postcode helps us show commute options and local rental estimates.
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <Input
                   id="postcode"
                   {...register("postcode")}
                   placeholder="2000"
                   maxLength={4}
-                  className="mt-2"
+                  className="mt-2 w-18"
                 />
                 {errors.postcode && (
                   <p className="mt-1 text-sm text-destructive">
@@ -215,53 +311,129 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
               </div>
 
               <div>
-                <Label htmlFor="age">Age *</Label>
-                <Input
-                  id="age"
-                  type="number"
-                  {...register("age")}
-                  placeholder="18"
-                  min={16}
-                  max={25}
-                  className="mt-2"
-                />
-                {errors.age && (
+                <div className="flex items-center gap-1.5">
+                  <Label htmlFor="australianCitizenOrPR" className="font-bold">Australian citizen? *</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex shrink-0 cursor-help text-muted-foreground hover:text-foreground" aria-label="More info">
+                        <Info className="size-4" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-xs">
+                      Youth Allowance and most government support require Australian citizenship or permanent residency.
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Select
+                  value={watch("australianCitizenOrPR") ?? ""}
+                  onValueChange={(value) => setValue("australianCitizenOrPR", value as "yes" | "no")}
+                >
+                  <SelectTrigger id="australianCitizenOrPR" className="mt-2 w-full max-w-xs">
+                    <SelectValue placeholder="Yes or No" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="yes">Yes</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.australianCitizenOrPR && (
                   <p className="mt-1 text-sm text-destructive">
-                    {errors.age.message}
+                    {errors.australianCitizenOrPR.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <Label htmlFor="consideredIndependent" className="font-bold">Are you considered independent? *</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex shrink-0 cursor-help text-muted-foreground hover:text-foreground" aria-label="More info">
+                        <Info className="size-4" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-xs">
+                      E.g. 2+ years full-time work after school, parents deceased/separated with no support, have a dependent child, refugee status, etc.
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <p className="mt-1 text-sm text-muted-foreground mb-2">
+                </p>
+                <Select
+                  value={watch("consideredIndependent") ?? ""}
+                  onValueChange={(value) => setValue("consideredIndependent", value as "yes" | "no" | "unsure")}
+                >
+                  <SelectTrigger id="consideredIndependent" className="mt-2 w-full max-w-xs">
+                    <SelectValue placeholder="Select Yes, No, or Unsure" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="yes">Yes</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
+                    <SelectItem value="unsure">Unsure</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.consideredIndependent && (
+                  <p className="mt-1 text-sm text-destructive">
+                    {errors.consideredIndependent.message}
                   </p>
                 )}
               </div>
             </div>
           )}
 
+
           {/* Step 2: Education */}
           {step === 2 && (
             <div className="space-y-6">
               <div>
-                <Label htmlFor="highestEducation">Highest Education level *</Label>
-                <Select
-                  onValueChange={(value) => setValue("highestEducation", value)}
-                  defaultValue={watch("highestEducation")}
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select your highest education level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="hsc">HSC</SelectItem>
-                    <SelectItem value="certificate-diploma">Certificate or Diploma</SelectItem>
-                    <SelectItem value="bachelor">Bachelor Degree</SelectItem>
-                    <SelectItem value="graduate">Graduate Degree</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.highestEducation && (
-                  <p className="mt-1 text-sm text-destructive">
-                    {errors.highestEducation.message}
-                  </p>
-                )}
-              </div>
+                <div className="flex items-center gap-1.5">
+                <Label htmlFor="highestEducation" className="font-bold">Highest Education level *</Label>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex shrink-0 cursor-help text-muted-foreground hover:text-foreground" aria-label="More info">
+                        <Info className="size-4" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-xs min-w-0 w-max max-w-[280px]">
+                      Your highest completed qualification helps us match you to courses, entry requirements, and fee information.
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                  <Select
+                    onValueChange={(value) => setValue("highestEducation", value)}
+                    defaultValue={watch("highestEducation")}
+                  >
+                    <SelectTrigger className="mt-2">
+                      <SelectValue placeholder="Select your highest education level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="hsc">High School Certificate</SelectItem>
+                      <SelectItem value="certificate-diploma">Certificate or Diploma</SelectItem>
+                      <SelectItem value="bachelor">Bachelor Degree</SelectItem>
+                      <SelectItem value="graduate">Graduate Degree</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {errors.highestEducation && (
+                    <p className="mt-1 text-sm text-destructive">
+                      {errors.highestEducation.message}
+                    </p>
+                  )}
+                </div>
 
-              <div>
-                <Label>Target Universities * (Select at least one)</Label>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                  <Label htmlFor="Target Universities" className="font-bold">Target Universities * (Select at least one)</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex shrink-0 cursor-help text-muted-foreground hover:text-foreground" aria-label="More info">
+                        <Info className="size-4" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-xs">
+                      We’ll tailor fees, commute options, and application timelines to the universities you select.
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-2">
                   {universities.map((uni) => {
                     const isSelected = watchedUniversities.includes(uni)
@@ -281,7 +453,7 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
                           >
                             <span>{uni}</span>
                             {isPrimary && (
-                              <span className="text-xs px-1.5 py-0.5 rounded bg-lime/20 text-lime font-medium">
+                              <span className="text-xs px-1.5 py-0.5 rounded bg-lime/20 text-[oklch(0.45_0.90_115)] font-medium">
                                 1st
                               </span>
                             )}
@@ -304,9 +476,21 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
               </div>
 
               <div>
-                <Label>Preferred Study Fields *</Label>
+                <div className="flex items-center gap-1.5">
+                  <Label className="font-bold">Preferred Study Fields * (Select at least one)</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex shrink-0 cursor-help text-muted-foreground hover:text-foreground" aria-label="More info">
+                        <Info className="size-4" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-xs">
+                      We use this for fee estimates and faculty-specific information. Your first selection is used as your primary preference.
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <p className="text-sm text-muted-foreground mt-1 mb-2">
-                  Select at least one field. Your first selection will be used as your primary preference for fee estimates.
+                  Your first selection will be used as your primary preference for fee estimates.
                 </p>
                 <div className="mt-2 grid grid-cols-2 gap-3 md:grid-cols-3">
                   {studyFields.map((field) => {
@@ -326,7 +510,7 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
                         >
                           <span>{field}</span>
                           {isPrimary && (
-                            <span className="text-xs px-1.5 py-0.5 rounded bg-lime/20 text-lime font-medium">
+                            <span className="text-xs px-1.5 py-0.5 rounded bg-lime/20 text-[oklch(0.45_0.90_115)] font-medium">
                               1st
                             </span>
                           )}
@@ -353,7 +537,7 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
           {step === 3 && (
             <div className="space-y-6">
               <div>
-                <Label htmlFor="livingSituation">Living Situation *</Label>
+                <Label htmlFor="livingSituation" className="font-bold">Living Situation *</Label>
                 <Select
                   onValueChange={(value) => setValue("livingSituation", value)}
                   defaultValue={watch("livingSituation")}
@@ -362,11 +546,11 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
                     <SelectValue placeholder="Select your living situation" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="home">Living at home</SelectItem>
-                    <SelectItem value="renting">Renting</SelectItem>
-                    <SelectItem value="moving_out">Moving out / relocating for study</SelectItem>
-                    <SelectItem value="on-campus">On-campus accommodation</SelectItem>
-                    <SelectItem value="unsure">Not sure yet</SelectItem>
+                    <SelectItem value="Staying at home">Staying at home</SelectItem>
+                    <SelectItem value="Renting/Moving out">Renting/Moving out</SelectItem>
+                    <SelectItem value="On-campus accommodation">On-campus accommodation</SelectItem>
+                    <SelectItem value="Remote/Regional area">Remote/Regional area</SelectItem>
+                    <SelectItem value="Not sure yet">Not sure yet</SelectItem>
                   </SelectContent>
                 </Select>
                 {errors.livingSituation && (
@@ -375,6 +559,42 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
                   </p>
                 )}
               </div>
+
+              {/* IF Renting/Moving out: Rental budget */}
+              {watch("livingSituation") === "Renting/Moving out" && (
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <Label htmlFor="rentalBudget" className="font-bold">Rental budget (weekly)</Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="inline-flex shrink-0 cursor-help text-muted-foreground hover:text-foreground" aria-label="More info">
+                          <Info className="size-4" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="max-w-xs">
+                        Will be used to find closest suburbs to desired universities that are within the budget range.
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <Input
+                    id="rentalBudget"
+                    type="number"
+                    {...register("rentalBudget")}
+                    placeholder="350"
+                    min={0}
+                    className="mt-2 w-24"
+                  />
+                </div>
+              )}
+
+              {/* IF On-campus accommodation: info */}
+              {watch("livingSituation") === "On-campus accommodation" && (
+                <div className="rounded-lg border border-lime/30 bg-lime/10 p-4">
+                  <p className="text-sm text-foreground">
+                    We will provide details on your primary university selections on-campus accommodation options and whether you fit the requirements.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -383,20 +603,38 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
             <div className="space-y-6">
               {/* Household Income (required) */}
               <div>
-                <Label htmlFor="householdIncome">Household Income *</Label>
+                <div className="flex items-center gap-1.5">
+                  <Label htmlFor="householdIncome" className="font-bold">Household Income *</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex shrink-0 cursor-help text-muted-foreground hover:text-foreground" aria-label="More info">
+                        <Info className="size-4" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-xs">
+                      <ul className="list-disc list-outside pl-5 space-y-1 text-left">
+                        <li>Under $66,722 — Full eligibility</li>
+                        <li>$66,723 – $80,000 — Partial reduction (20¢ per $ over $66,722, 50–90% of max rate)</li>
+                        <li>$80,001 – $100,000 — Significant reduction</li>
+                        <li>$100,001 – $150,000 — Usually zero for most dependent students; small amount possible if multiple children receive Youth Allowance</li>
+                        <li>Over $150,000 — Almost always zero</li>
+                      </ul>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <Select
                   onValueChange={(value) => setValue("householdIncome", value)}
-                  defaultValue={watch("householdIncome")}
+                  value={watch("householdIncome") ?? ""}
                 >
-                  <SelectTrigger className="mt-2">
+                  <SelectTrigger id="householdIncome" className="mt-2 w-full max-w-xs">
                     <SelectValue placeholder="Select income range" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="under-66722">Under $66,722 — Full eligibility</SelectItem>
-                    <SelectItem value="66723-80k">$66,723 – $80,000 — Partial reduction (20¢ per $ over $66,722)</SelectItem>
-                    <SelectItem value="80k-100k">$80,001 – $100,000 — Significant reduction</SelectItem>
-                    <SelectItem value="100k-150k">$100,001 – $150,000 — Usually zero for most dependent students</SelectItem>
-                    <SelectItem value="over-150k">Over $150,000 — Almost always zero</SelectItem>
+                    <SelectItem value="under-66722">Under $66,722</SelectItem>
+                    <SelectItem value="66723-80k">$66,723 – $80,000</SelectItem>
+                    <SelectItem value="80k-100k">$80,001 – $100,000</SelectItem>
+                    <SelectItem value="100k-150k">$100,001 – $150,000</SelectItem>
+                    <SelectItem value="over-150k">Over $150,000</SelectItem>
                     <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
                   </SelectContent>
                 </Select>
@@ -407,39 +645,129 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
                 )}
               </div>
 
+                            {/* Personal Income & Assets */}
+                            <div className="space-y-4 rounded-lg border border-border/60 bg-muted/30 p-4">
+                <h3 className="text-sm font-semibold">Personal Income & Assets</h3>
+
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <Label htmlFor="personalIncomeFortnightly" className="font-bold">Approximate fortnightly personal income </Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="inline-flex shrink-0 cursor-help text-muted-foreground hover:text-foreground" aria-label="More info">
+                          <Info className="size-4" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="max-w-xs">
+                        Used to assess your Youth Allowance personal income test. Over $539 fortnightly can reduce or stop payment.
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <Select
+                    onValueChange={(value) => setValue("personalIncomeFortnightly", value)}
+                    value={watch("personalIncomeFortnightly") ?? ""}
+                  >
+                    <SelectTrigger id="personalIncomeFortnightly" className="mt-2 w-full max-w-xs">
+                      <SelectValue placeholder="Select range" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="under-190">Under $190</SelectItem>
+                      <SelectItem value="190-539">$190 – $539</SelectItem>
+                      <SelectItem value="over-539">Over $539</SelectItem>
+                      <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <Label htmlFor="significantAssets" className="font-bold">Do you have significant assets?</Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="inline-flex shrink-0 cursor-help text-muted-foreground hover:text-foreground" aria-label="More info">
+                          <Info className="size-4" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="max-w-xs">
+                        Assets over set limits can affect Youth Allowance. Includes savings, investments, and certain vehicle value.
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <Select
+                    onValueChange={(value) => setValue("significantAssets", value)}
+                    value={watch("significantAssets") ?? ""}
+                  >
+                    <SelectTrigger id="significantAssets" className="mt-2 w-full max-w-xs">
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="no">No</SelectItem>
+                      <SelectItem value="yes">Yes</SelectItem>
+                      <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {watch("significantAssets") === "yes" && (
+                    <Input
+                      id="significantAssetsValue"
+                      {...register("significantAssetsValue")}
+                      placeholder="Rough value (e.g. $5,000 savings)"
+                      className="mt-2 w-full max-w-xs"
+                    />
+                  )}
+                </div>
+              </div>
+
               {/* Siblings receiving payments */}
               <div>
-                <Label htmlFor="siblingsReceivingPayments">Siblings receiving Youth Allowance, ABSTUDY or similar</Label>
-                <p className="text-sm text-muted-foreground mt-1 mb-2">
-                  Parental income taper is shared among siblings — reduces impact per person if multiple qualify.
-                </p>
+                <div className="flex items-center gap-1.5">
+                  <Label htmlFor="siblingsReceivingPayments" className="font-bold">Siblings receiving Youth Allowance, ABSTUDY or similar</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex shrink-0 cursor-help text-muted-foreground hover:text-foreground" aria-label="More info">
+                        <Info className="size-4" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-xs">
+                      Parental income taper is shared among siblings — reduces impact per person if multiple qualify.
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <Select
                   onValueChange={(value) => setValue("siblingsReceivingPayments", value)}
-                  defaultValue={watch("siblingsReceivingPayments")}
+                  value={watch("siblingsReceivingPayments") ?? ""}
                 >
-                  <SelectTrigger className="mt-2">
+                  <SelectTrigger id="siblingsReceivingPayments" className="mt-2 w-full max-w-xs">
                     <SelectValue placeholder="Select" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="no">No</SelectItem>
-                    <SelectItem value="yes-1">Yes — 1 sibling</SelectItem>
-                    <SelectItem value="yes-2">Yes — 2 siblings</SelectItem>
-                    <SelectItem value="yes-3plus">Yes — 3 or more</SelectItem>
+                    <SelectItem value="no">None</SelectItem>
+                    <SelectItem value="yes-1">One</SelectItem>
+                    <SelectItem value="yes-2">Two</SelectItem>
+                    <SelectItem value="yes-3plus">Three or more</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Study load */}
               <div>
-                <Label htmlFor="studyLoadFullTime">Will you be studying full-time? (75%+ load) *</Label>
-                <p className="text-sm text-muted-foreground mt-1 mb-2">
-                  Youth Allowance requires full-time or concessional approved study.
-                </p>
+                <div className="flex items-center gap-1.5">
+                  <Label htmlFor="studyLoadFullTime" className="font-bold">Will you be studying full-time? *</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex shrink-0 cursor-help text-muted-foreground hover:text-foreground" aria-label="More info">
+                        <Info className="size-4" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-xs">
+                      Load must be 75%+. Youth Allowance requires full-time or concessional approved study.
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <Select
                   onValueChange={(value) => setValue("studyLoadFullTime", value)}
-                  defaultValue={watch("studyLoadFullTime")}
+                  value={watch("studyLoadFullTime") ?? ""}
                 >
-                  <SelectTrigger className="mt-2">
+                  <SelectTrigger id="studyLoadFullTime" className="mt-2 w-full max-w-xs">
                     <SelectValue placeholder="Select" />
                   </SelectTrigger>
                   <SelectContent>
@@ -456,12 +784,12 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
 
               {watch("studyLoadFullTime") === "no" && (
                 <div>
-                  <Label htmlFor="concessionalStudyLoad">Is it a concessional study load due to disability or illness?</Label>
+                  <Label htmlFor="concessionalStudyLoad" className="font-bold">Is it a concessional study load due to disability or illness?</Label>
                   <Select
                     onValueChange={(value) => setValue("concessionalStudyLoad", value)}
-                    defaultValue={watch("concessionalStudyLoad")}
+                    value={watch("concessionalStudyLoad") ?? ""}
                   >
-                    <SelectTrigger className="mt-2">
+                    <SelectTrigger id="concessionalStudyLoad" className="mt-2 w-full max-w-xs">
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
                     <SelectContent>
@@ -487,41 +815,6 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
                 >
                   I am Aboriginal or Torres Strait Islander (for ABSTUDY eligibility)
                 </label>
-              </div>
-
-              {/* Optional preferences */}
-              <div className="pt-2 border-t">
-                <Label htmlFor="commuteMaxTime">Maximum Commute Time (Optional)</Label>
-                <Select
-                  onValueChange={(value) => setValue("commuteMaxTime", value)}
-                  defaultValue={watch("commuteMaxTime")}
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select maximum commute time" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="30">30 minutes</SelectItem>
-                    <SelectItem value="45">45 minutes</SelectItem>
-                    <SelectItem value="60">1 hour</SelectItem>
-                    <SelectItem value="90">1.5 hours</SelectItem>
-                    <SelectItem value="120">2 hours</SelectItem>
-                    <SelectItem value="no-limit">No limit</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="budgetMax">Maximum Weekly Budget (Optional)</Label>
-                <Input
-                  id="budgetMax"
-                  type="number"
-                  {...register("budgetMax")}
-                  placeholder="500"
-                  className="mt-2"
-                />
-                <p className="mt-1 text-sm text-muted-foreground">
-                  For rent and living expenses
-                </p>
               </div>
             </div>
           )}

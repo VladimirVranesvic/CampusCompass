@@ -133,3 +133,11 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Lime progress bar (plan form) */
+[data-slot="progress"].progress-lime {
+  background: var(--input);
+}
+[data-slot="progress"].progress-lime [data-slot="progress-indicator"] {
+  background: var(--lime);
+}

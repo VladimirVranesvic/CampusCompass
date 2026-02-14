@@ -1,9 +1,18 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
+import type { User } from "@supabase/supabase-js"
 import { Button } from "@/components/ui/button"
-import { Menu, X, GraduationCap, ChevronDown } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Menu, X, GraduationCap, ChevronDown, User, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
@@ -14,6 +23,28 @@ const navItems = [
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+  const router = useRouter()
+  const supabase = createClient()
+
+  useEffect(() => {
+    const getInitial = async () => {
+      const { data: { user: u } } = await supabase.auth.getUser()
+      setUser(u ?? null)
+    }
+    getInitial()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+    return () => subscription.unsubscribe()
+  }, [supabase.auth])
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    setUser(null)
+    router.push("/")
+    router.refresh()
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -37,16 +68,59 @@ export function Navbar() {
               )}
             >
               {item.label}
-              {item.hasDropdown && <ChevronDown className="h-4 w-4" />}
             </Link>
           ))}
+          {user && (
+            <Link
+              href="/plans"
+              className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              My plans
+            </Link>
+          )}
         </nav>
 
-        {/* CTA Button */}
-        <div className="hidden md:block">
-          <Button className="bg-lime text-foreground hover:bg-lime-hover" asChild>
-            <Link href="/plan">Create plan</Link>
-          </Button>
+        {/* Desktop: Auth + CTA */}
+        <div className="hidden items-center gap-2 md:flex">
+          {user ? (
+            <>
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/plans">My plans</Link>
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <User className="h-4 w-4" />
+                    <span className="max-w-[140px] truncate text-sm">
+                      {user.email ?? "Account"}
+                    </span>
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={handleLogout} className="gap-2 cursor-pointer">
+                    <LogOut className="h-4 w-4" />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button className="bg-lime text-foreground hover:bg-lime-hover" asChild>
+                <Link href="/plan">Create plan</Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/login">Log in</Link>
+              </Button>
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/signup">Sign up</Link>
+              </Button>
+              <Button className="bg-lime text-foreground hover:bg-lime-hover" asChild>
+                <Link href="/plan">Create plan</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -67,16 +141,50 @@ export function Navbar() {
               <Link
                 key={item.label}
                 href={item.href}
-                className="flex items-center justify-between py-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                className="flex items-center justify-between py-3 text-sm font-medium text-muted-foreground hover:text-foreground"
                 onClick={() => setIsOpen(false)}
               >
                 {item.label}
-                {item.hasDropdown && <ChevronDown className="h-4 w-4" />}
               </Link>
             ))}
-            <Button className="mt-4 bg-lime text-foreground hover:bg-lime-hover" asChild>
-              <Link href="/plan">Create plan</Link>
-            </Button>
+            {user && (
+              <Link
+                href="/plans"
+                className="flex items-center justify-between py-3 text-sm font-medium text-muted-foreground hover:text-foreground"
+                onClick={() => setIsOpen(false)}
+              >
+                My plans
+              </Link>
+            )}
+            <div className="mt-4 flex flex-col gap-2 border-t pt-4">
+              {user ? (
+                <>
+                  <Button className="bg-lime text-foreground hover:bg-lime-hover" asChild>
+                    <Link href="/plan" onClick={() => setIsOpen(false)}>
+                      Create plan
+                    </Link>
+                  </Button>
+                  <Button variant="outline" onClick={() => { setIsOpen(false); handleLogout(); }}>
+                    Sign out
+                  </Button>
+                  <p className="text-xs text-muted-foreground truncate px-2">{user.email}</p>
+                </>
+              ) : (
+                <>
+                  <Button className="bg-lime text-foreground hover:bg-lime-hover" asChild>
+                    <Link href="/plan" onClick={() => setIsOpen(false)}>
+                      Create plan
+                    </Link>
+                  </Button>
+                  <Button variant="outline" asChild>
+                    <Link href="/login" onClick={() => setIsOpen(false)}>Log in</Link>
+                  </Button>
+                  <Button variant="outline" asChild>
+                    <Link href="/signup" onClick={() => setIsOpen(false)}>Sign up</Link>
+                  </Button>
+                </>
+              )}
+            </div>
           </nav>
         </div>
       )}

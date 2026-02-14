@@ -87,18 +87,9 @@ function parseDate(dateStr: string): string {
   
 export function generateUACTimelineFromCSV(userData: any) {
   const rounds = parseUACCSV()
-  const today = new Date()
-  today.setHours(0, 0, 0, 0) // Reset to start of day for accurate comparison
-  
-  // Find the next upcoming application deadline
-  let nextDeadline = '2026-12-31' // Default fallback
-  for (const round of rounds) {
-    const applyByDate = new Date(parseDate(round.applyBy))
-    if (applyByDate > today) {
-      nextDeadline = round.applyBy
-      break // Found the next upcoming deadline
-    }
-  }
+  // Assume early 2025 for UAC 2027 dates not yet released
+  const referenceDate = new Date('2025-02-01')
+  referenceDate.setHours(0, 0, 0, 0)
   
   // Filter for main rounds (2026 dates, Year 12 students)
   const mainRounds = rounds.filter(r => 
@@ -106,8 +97,15 @@ export function generateUACTimelineFromCSV(userData: any) {
     r.notes.includes('Main offer rounds for 2025 Year 12 students')
   )
   
-  // Get the round corresponding to the next deadline
-  const nextDeadlineRound = rounds.find(r => r.applyBy === nextDeadline)
+  // Find the next upcoming application deadline from reference date (using mainRounds so it appears in the UI)
+  let nextDeadline = '2026-12-31' // Default fallback
+  for (const round of mainRounds) {
+    const applyByDate = new Date(parseDate(round.applyBy))
+    if (applyByDate > referenceDate) {
+      nextDeadline = round.applyBy
+      break
+    }
+  }
   
   // Get ALL important dates (both past and upcoming)
   const importantDates: Array<{ date: string; event: string }> = []

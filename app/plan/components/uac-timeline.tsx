@@ -3,6 +3,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar, Clock } from "lucide-react"
 import { format, isAfter} from "date-fns"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { ChevronDown, ChevronUp } from "lucide-react"
 
 interface UACTimelineProps {
   timeline: {
@@ -22,60 +24,51 @@ export function UACTimeline({ timeline }: UACTimelineProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>UAC Timeline & Key Dates</CardTitle>
+        <CardTitle>UAC Application Deadlines</CardTitle>
         <CardDescription>
-          Important dates for your university application journey
+          Next deadline shown below. View all rounds to see every apply-by date.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Application Deadline Alert */}
-        <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
-          <div className="flex items-center gap-2">
-            <Clock className="h-5 w-5 text-amber-600" />
-            <div>
-              <p className="font-semibold text-amber-900">
-                Application Deadline: {format(deadline, "MMMM d, yyyy")}
-              </p>
-              <p className="text-sm text-amber-700">
-                {daysUntilDeadline > 0
-                  ? `${daysUntilDeadline} days remaining`
-                  : "Deadline has passed"}
-              </p>
-            </div>
-          </div>
-        </div>
 
-        {/* Offer Rounds */}
+        {/* Application Deadlines: next one shown, rest in dropdown */}
         <div>
-          <h3 className="font-semibold mb-3">Application Deadlines</h3>
-          <div className="space-y-3">
-          {timeline.offerRounds.map((round) => {
-              const applyByDate = new Date(round.applyBy) // Changed from round.date
-              const isUpcoming = isAfter(applyByDate, today) // Check if apply-by is upcoming
-              return (
-                <div
-                  key={round.round}
-                  className="flex items-center gap-4 p-3 rounded-lg border"
-                >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-lime font-bold">
-                    {round.round}
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium">{round.description}</p>
-                    <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                      <Calendar className="h-4 w-4" />
-                      Apply by {format(applyByDate, "MMMM d, yyyy")}
+          <Collapsible>
+            <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-lime hover:underline">
+              View all application deadlines
+              <ChevronDown className="h-4 w-4" />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="space-y-3 mt-3">
+                {timeline.offerRounds.map((round) => {
+                  const applyByDate = new Date(round.applyBy)
+                  const isUpcoming = isAfter(applyByDate, today)
+                  const isNext = round.applyBy === timeline.applicationDeadline
+                  return (
+                    <div
+                      key={round.round}
+                      className={`flex items-center gap-4 p-3 rounded-lg border ${isNext ? 'ring-2 ring-lime/50' : ''}`}
+                    >
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-lime font-bold">
+                        {round.round}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium">{round.description}</p>
+                        <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                          <Calendar className="h-4 w-4" />
+                          Apply by {format(applyByDate, "MMMM d, yyyy")}
+                        </div>
+                      </div>
+                      {isNext && <span className="text-xs px-2 py-1 rounded-full bg-lime/20 text-lime font-medium">Next deadline</span>}
+                      {isUpcoming && !isNext && (
+                        <span className="text-xs px-2 py-1 rounded-full bg-muted">Upcoming</span>
+                      )}
                     </div>
-                  </div>
-                  {isUpcoming && (
-                    <span className="text-xs px-2 py-1 rounded-full bg-muted">
-                      Upcoming
-                    </span>
-                  )}
-                </div>
-              )
-            })}
-          </div>
+                  )
+                })}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         </div>
 
         {/* Important Dates */}
