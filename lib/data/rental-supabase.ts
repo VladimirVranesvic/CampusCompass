@@ -102,9 +102,27 @@ export interface RentalAveragesByPostcode {
 
 const NORMALIZE_POSTCODE = (p: string) => String(p).replace(/\D/g, "").padStart(4, "0")
 
+/** Locality names that look like venues/commercial, not suburbs — excluded when picking suburb for postcode */
+const NON_SUBURB_PATTERNS = [
+  /westfield/i,
+  /shopping centre/i,
+  /shopping center/i,
+  /mail centre/i,
+  /mail center/i,
+  /delivery centre/i,
+  /delivery center/i,
+]
+
+function looksLikeSuburb(locality: string): boolean {
+  const s = locality.trim()
+  if (!s) return false
+  return !NON_SUBURB_PATTERNS.some((re) => re.test(s))
+}
+
 /**
  * Get the most common suburb/locality for a postcode from PostCodes.
  * If multiple localities share the postcode, returns the one that occurs most often.
+ * Skips venue-style names (e.g. "Westfield Parramatta") so we prefer actual suburb names.
  */
 export async function getSuburbForPostcode(
   supabase: SupabaseClient,
@@ -125,15 +143,26 @@ export async function getSuburbForPostcode(
   for (const loc of localities) {
     counts[loc] = (counts[loc] ?? 0) + 1
   }
-  let best = localities[0]
+  // Prefer suburb-like names; ignore venue/commercial names (e.g. Westfield Parramatta)
+  let best: string | null = null
   let max = 0
   for (const [loc, n] of Object.entries(counts)) {
+    if (!looksLikeSuburb(loc)) continue
     if (n > max) {
       max = n
       best = loc
     }
   }
-  return best
+  // If every locality was filtered out, fall back to overall most frequent
+  if (best === null) {
+    for (const [loc, n] of Object.entries(counts)) {
+      if (n > max) {
+        max = n
+        best = loc
+      }
+    }
+  }
+  return best ?? null
 }
 
 /**
