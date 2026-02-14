@@ -134,14 +134,21 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
                 {primarySummaryEntry.courseYears} {primarySummaryEntry.courseYears === 1 ? "year" : "years"}
               </p>
               {primarySummaryEntry.facultyUrl && (
-                <a
-                  href={primarySummaryEntry.facultyUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-sm text-foreground hover:underline mt-2"
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2 border-lime bg-lime/20 text-foreground hover:bg-lime-hover hover:border-lime"
+                  asChild
                 >
-                  Learn more about this faculty <ExternalLink className="size-3.5" />
-                </a>
+                  <a
+                    href={primarySummaryEntry.facultyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5"
+                  >
+                    Learn more about this faculty <ExternalLink className="size-3.5" />
+                  </a>
+                </Button>
               )}
             </div>
             <div className="grid grid-cols-2 gap-4">
