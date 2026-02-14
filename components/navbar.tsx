@@ -12,7 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Menu, X, GraduationCap, ChevronDown, User, LogOut } from "lucide-react"
+import { Menu, X, GraduationCap, ChevronDown, User as UserIcon, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
@@ -70,14 +70,6 @@ export function Navbar() {
               {item.label}
             </Link>
           ))}
-          {user && (
-            <Link
-              href="/plans"
-              className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              My plans
-            </Link>
-          )}
         </nav>
 
         {/* Desktop: Auth + CTA */}
@@ -90,7 +82,7 @@ export function Navbar() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="gap-2">
-                    <User className="h-4 w-4" />
+                    <UserIcon className="h-4 w-4" />
                     <span className="max-w-[140px] truncate text-sm">
                       {user.email ?? "Account"}
                     </span>

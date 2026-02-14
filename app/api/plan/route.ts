@@ -3,7 +3,34 @@ import { generateUACTimelineFromCSV } from "@/lib/data/uac-parser"
 import { calculateCommuteRoute } from "@/lib/data/nsw-trip-planner"
 import { parseBenefitsCSV, type BenefitDefinition } from "@/lib/data/benefits-parser"
 import { getAllMatchingFacultiesForUni, getAllAvailableFacultiesForUni } from "@/lib/data/fees-parser"
+import { getRentalAveragesByPostcode, getNearbySuburbNamesOnly } from "@/lib/data/rental-supabase"
 // Youth Allowance detailed calculation is now handled in the calculator component on results page
+
+/** University campus postcodes (NSW) for rental data — same as geocoding. */
+const UNIVERSITY_POSTCODE: Record<string, string> = {
+  "University of Sydney": "2006",
+  "UNSW Sydney": "2052",
+  "University of Technology Sydney": "2007",
+  "Macquarie University": "2109",
+  "Western Sydney University": "2751",
+  "University of Wollongong": "2522",
+  "University of Newcastle": "2308",
+  "Charles Sturt University": "2678",
+  "Southern Cross University": "2480",
+  "University of New England": "2351",
+  "Australian Catholic University": "2060",
+}
+
+function getRentalPostcodeAndLabel(userData: any): { postcode: string; locationLabel?: string } {
+  const currentDwelling = (userData?.postcode ?? "2000").toString().replace(/\D/g, "").padStart(4, "0")
+  if (userData?.livingSituation === "Renting/Moving out" && userData?.preferredLocationPostcode) {
+    const preferred = String(userData.preferredLocationPostcode).replace(/\D/g, "").padStart(4, "0")
+    if (preferred.length === 4) {
+      return { postcode: preferred, locationLabel: `Preferred location (${preferred})` }
+    }
+  }
+  return { postcode: currentDwelling, locationLabel: "Current dwelling" }
+}
 
 async function calculateCommute(userData: any) {
   const universities = userData.targetUniversities || []
@@ -45,22 +72,79 @@ async function calculateCommute(userData: any) {
   
   return routes
 }
-function getMockRentalData(postcode: string) {
-  // Fallback mock data until rental data is moved to Supabase or CSV
-  return {
-    postcode,
-    medianWeeklyRent: {
-      apartment: Math.floor(Math.random() * 200) + 300, // $300-500
-      house: Math.floor(Math.random() * 300) + 400, // $400-700
-      share: Math.floor(Math.random() * 150) + 150, // $150-300
-    },
-    byBedrooms: {},
-    nearbySuburbs: [
-      { name: "Suburb A", distance: "2km", medianRent: 350 },
-      { name: "Suburb B", distance: "5km", medianRent: 320 },
-      { name: "Suburb C", distance: "8km", medianRent: 380 },
-    ],
+const MOCK_RENTS = [350, 320, 380]
+const MOCK_BY_BEDROOMS: Record<string, { apartment: number; house: number; townhouse: number }> = {
+  "0": { apartment: 320, house: 0, townhouse: 0 },
+  "1": { apartment: 380, house: 400, townhouse: 370 },
+  "2": { apartment: 450, house: 520, townhouse: 480 },
+  "3": { apartment: 550, house: 600, townhouse: 550 },
+  "4": { apartment: 650, house: 720, townhouse: 620 },
+}
+
+function mockSuburbEntry(
+  name: string,
+  distance: string,
+  offset: number
+): { name: string; distance: string; medianRent: number; medianWeeklyRent: RentByType; byBedrooms: Record<string, RentByType> } {
+  const medianWeeklyRent: RentByType = {
+    apartment: MOCK_RENTS[0] + offset,
+    house: MOCK_RENTS[1] + offset + 30,
+    townhouse: MOCK_RENTS[2] + offset - 20,
   }
+  const byBedrooms: Record<string, RentByType> = {}
+  for (const [k, v] of Object.entries(MOCK_BY_BEDROOMS)) {
+    byBedrooms[k] = {
+      apartment: v.apartment + offset,
+      house: v.house + offset,
+      townhouse: v.townhouse + offset,
+    }
+  }
+  const medianRent = Math.round(
+    (medianWeeklyRent.apartment + medianWeeklyRent.house + medianWeeklyRent.townhouse) / 3
+  )
+  return { name, distance, medianRent, medianWeeklyRent, byBedrooms }
+}
+
+type RentByType = { apartment: number; house: number; townhouse: number }
+
+async function getMockRentalData(postcode: string, locationLabel?: string) {
+  let nearbySuburbs = [
+    mockSuburbEntry("Suburb A", "2 km", 0),
+    mockSuburbEntry("Suburb B", "5 km", -20),
+    mockSuburbEntry("Suburb C", "8 km", 15),
+  ]
+  try {
+    const names = await getNearbySuburbNamesOnly(postcode, 3)
+    if (names.length > 0) {
+      nearbySuburbs = names.map((n, i) =>
+        mockSuburbEntry(n.name, n.distance, [-20, 0, 15][i % 3] ?? 0)
+      )
+    }
+  } catch (_) {
+    // keep placeholder names
+  }
+  const baseRent: RentByType = { apartment: 380, house: 450, townhouse: 420 }
+  const byBedrooms: Record<string, RentByType> = { ...MOCK_BY_BEDROOMS }
+  return {
+    postcode: String(postcode).padStart(4, "0"),
+    ...(locationLabel && { locationLabel }),
+    medianWeeklyRent: baseRent,
+    byBedrooms,
+    nearbySuburbs,
+  }
+}
+
+async function getRentalData(postcode: string, locationLabel?: string) {
+  const pc = postcode?.trim() || "2000"
+  try {
+    const data = await getRentalAveragesByPostcode(pc, locationLabel)
+    if (data.nearbySuburbs.length > 0 || data.medianWeeklyRent.apartment || data.medianWeeklyRent.house || data.medianWeeklyRent.townhouse) {
+      return data
+    }
+  } catch (e) {
+    console.warn("Rental Supabase fallback:", e)
+  }
+  return getMockRentalData(pc, locationLabel)
 }
 
 function evaluateBenefitEligibility(def: BenefitDefinition, userData: any): { eligible: boolean; reason?: string } {
@@ -307,7 +391,10 @@ export async function POST(request: NextRequest) {
     ] = await Promise.all([
       Promise.resolve(generateUACTimelineFromCSV(userData)),
       calculateCommute(userData),
-      Promise.resolve(getMockRentalData(userData.postcode)),
+      (() => {
+        const { postcode, locationLabel } = getRentalPostcodeAndLabel(userData)
+        return getRentalData(postcode, locationLabel)
+      })(),
       Promise.resolve(checkBenefitsEligibility({ ...userData, movingForStudy: userData.livingSituation === 'moving_out' })),
       Promise.resolve(calculateFees(userData)),
       Promise.resolve(generateChecklist(userData)),

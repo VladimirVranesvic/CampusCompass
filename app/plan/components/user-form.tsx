@@ -34,6 +34,7 @@ const userSchema = z.object({
   // Living Situation
   livingSituation: z.string().min(1, "Please select living situation"),
   rentalBudget: z.string().optional(),
+  preferredLocationPostcode: z.string().optional().refine((v) => !v || /^\d{4}$/.test(v.trim()), "Must be 4 digits"),
 
   // Government subsidy eligibility (Step 4)
   householdIncome: z.string().min(1, "Please select income range"),
@@ -105,6 +106,7 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
       studyLoadFullTime: "",
       concessionalStudyLoad: "",
       isIndigenous: false,
+      preferredLocationPostcode: "",
     },
   })
 
@@ -560,31 +562,57 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
                 )}
               </div>
 
-              {/* IF Renting/Moving out: Rental budget */}
+              {/* IF Renting/Moving out: Preferred location + Rental budget */}
               {watch("livingSituation") === "Renting/Moving out" && (
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <Label htmlFor="rentalBudget" className="font-bold">Rental budget (weekly)</Label>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="inline-flex shrink-0 cursor-help text-muted-foreground hover:text-foreground" aria-label="More info">
-                          <Info className="size-4" />
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent side="right" className="max-w-xs">
-                        Will be used to find closest suburbs to desired universities that are within the budget range.
-                      </TooltipContent>
-                    </Tooltip>
+                <>
+                  <div>
+                    <Label htmlFor="preferredLocationPostcode" className="font-bold">Preferred location (postcode)</Label>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      Enter the postcode where you want to move. We will show rental estimates for this area.
+                    </p>
+                    <Input
+                      id="preferredLocationPostcode"
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={4}
+                      placeholder="e.g. 2006"
+                      className="mt-2 w-24 font-mono"
+                      {...register("preferredLocationPostcode")}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(/\D/g, "").slice(0, 4)
+                        setValue("preferredLocationPostcode", v, { shouldValidate: true })
+                      }}
+                    />
+                    {errors.preferredLocationPostcode && (
+                      <p className="mt-1 text-sm text-destructive">
+                        {errors.preferredLocationPostcode.message}
+                      </p>
+                    )}
                   </div>
-                  <Input
-                    id="rentalBudget"
-                    type="number"
-                    {...register("rentalBudget")}
-                    placeholder="350"
-                    min={0}
-                    className="mt-2 w-24"
-                  />
-                </div>
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <Label htmlFor="rentalBudget" className="font-bold">Rental budget (weekly)</Label>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex shrink-0 cursor-help text-muted-foreground hover:text-foreground" aria-label="More info">
+                            <Info className="size-4" />
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="right" className="max-w-xs">
+                          Will be used to find closest suburbs to desired universities that are within the budget range.
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <Input
+                      id="rentalBudget"
+                      type="number"
+                      {...register("rentalBudget")}
+                      placeholder="350"
+                      min={0}
+                      className="mt-2 w-24"
+                    />
+                  </div>
+                </>
               )}
 
               {/* IF On-campus accommodation: info */}
