@@ -112,6 +112,14 @@ function evaluateBenefitEligibility(def: BenefitDefinition, userData: any): { el
   if (def.requiresIndigenous === true && !isIndigenous) {
     return { eligible: false, reason: "Eligibility is for Aboriginal and Torres Strait Islander students" }
   }
+  // Tertiary Access Payment: only for users in Remote/Regional area
+  if (def.id === "tertiary_access_payment") {
+    const normalizedLiving = normalizeLivingSituationForBenefits(livingSituation)
+    if (!normalizedLiving.includes("remote")) {
+      return { eligible: false, reason: "For students in a remote or regional area" }
+    }
+    return { eligible: true }
+  }
   if (def.requiresMovingForStudy === true && !movingForStudy) {
     return { eligible: false, reason: "For students relocating to study" }
   }
