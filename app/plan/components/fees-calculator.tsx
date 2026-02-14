@@ -75,7 +75,7 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
   const renderFeeEntry = (entry: (typeof fees.byUniversity)[0]) => (
     <div
       key={`${entry.university}-${entry.faculty}`}
-      className="flex items-center justify-between gap-3 p-4 rounded-lg border-2 border-lime/40 bg-lime/10"
+      className="flex items-center justify-between gap-3 p-4 rounded-lg border-2 border-lime/40 bg-background"
     >
       <div className="min-w-0 flex-1">
         <p className="font-medium">
