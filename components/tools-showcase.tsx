@@ -8,22 +8,9 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
-import { Calendar, HelpCircle, MapPin, Award, Calculator, BarChart3 } from "lucide-react"
+import { Calendar, HelpCircle, MapPin, Award, Calculator } from "lucide-react"
 
 const tools = [
-  {
-    id: "atar",
-    icon: BarChart3,
-    title: "ATAR Calculator",
-    description:
-      "Estimate your ATAR from subject marks using scaling data. Add subjects, enter your marks, and see your estimated aggregate and ATAR.",
-    features: [
-      "Uses scaling data from our database",
-      "Best 10 units calculated automatically",
-      "Aggregate to ATAR conversion by year",
-    ],
-    href: "/tools/atar",
-  },
   {
     id: "timeline",
     icon: Calendar,
