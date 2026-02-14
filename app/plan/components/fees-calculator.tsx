@@ -189,6 +189,21 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
               <span className="font-medium">{fees.hecsHelp.estimatedRepayment}</span>
             </p>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-3 border-lime bg-lime/20 text-foreground hover:bg-lime-hover hover:border-lime"
+            asChild
+          >
+            <a
+              href="https://www.studyassist.gov.au/help-loans/hecs-help"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5"
+            >
+              Learn more <ExternalLink className="size-3" />
+            </a>
+          </Button>
         </div>
 
         {/* Upfront Payment */}
