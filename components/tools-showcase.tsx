@@ -1,14 +1,29 @@
 "use client"
 
+import Link from "next/link"
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
-import { Calendar, HelpCircle, MapPin, Award, Calculator } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Calendar, HelpCircle, MapPin, Award, Calculator, BarChart3 } from "lucide-react"
 
 const tools = [
+  {
+    id: "atar",
+    icon: BarChart3,
+    title: "ATAR Calculator",
+    description:
+      "Estimate your ATAR from subject marks using scaling data. Add subjects, enter your marks, and see your estimated aggregate and ATAR.",
+    features: [
+      "Uses scaling data from our database",
+      "Best 10 units calculated automatically",
+      "Aggregate to ATAR conversion by year",
+    ],
+    href: "/tools/atar",
+  },
   {
     id: "timeline",
     icon: Calendar,
@@ -20,6 +35,7 @@ const tools = [
       "Sync with your calendar app",
       "Offer round countdown",
     ],
+    href: null as string | null,
   },
   {
     id: "benefits",
@@ -32,6 +48,7 @@ const tools = [
       "Step-by-step application guides",
       "Centrelink tips & resources",
     ],
+    href: null as string | null,
   },
   {
     id: "commute",
@@ -44,6 +61,7 @@ const tools = [
       "Suburb comparison tool",
       "Budget calculator",
     ],
+    href: null as string | null,
   },
   {
     id: "scholarships",
@@ -56,6 +74,7 @@ const tools = [
       "Application deadline alerts",
       "Eligibility filters",
     ],
+    href: null as string | null,
   },
   {
     id: "fees",
@@ -68,6 +87,7 @@ const tools = [
       "HECS-HELP repayment calculator",
       "Upfront payment options",
     ],
+    href: null as string | null,
   },
 ]
 
@@ -110,6 +130,11 @@ export function ToolsShowcase() {
                         </li>
                       ))}
                     </ul>
+                    {"href" in tool && tool.href && (
+                      <Button className="mt-4 bg-lime text-foreground hover:bg-lime-hover" asChild>
+                        <Link href={tool.href}>Try it</Link>
+                      </Button>
+                    )}
                   </div>
                 </AccordionContent>
               </AccordionItem>

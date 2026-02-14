@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { DollarSign, GraduationCap, ChevronDown, ChevronUp, ExternalLink, AlertTriangle } from "lucide-react"
+import { DollarSign, ChevronDown, ChevronUp, ExternalLink, AlertTriangle } from "lucide-react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Button } from "@/components/ui/button"
 
@@ -75,7 +75,7 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
   const renderFeeEntry = (entry: (typeof fees.byUniversity)[0]) => (
     <div
       key={`${entry.university}-${entry.faculty}`}
-      className="flex items-center justify-between gap-3 p-3 rounded-lg border"
+      className="flex items-center justify-between gap-3 p-4 rounded-lg border-2 border-lime/40 bg-lime/10"
     >
       <div className="min-w-0 flex-1">
         <p className="font-medium">
@@ -85,14 +85,21 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
           {entry.courseYears} {entry.courseYears === 1 ? "year" : "years"}
         </p>
         {entry.facultyUrl && (
-          <a
-            href={entry.facultyUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs text-foreground hover:underline mt-1"
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-2 border-lime bg-lime/20 text-foreground hover:bg-lime-hover hover:border-lime"
+            asChild
           >
-            Learn more <ExternalLink className="size-3" />
-          </a>
+            <a
+              href={entry.facultyUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5"
+            >
+              Learn more <ExternalLink className="size-3" />
+            </a>
+          </Button>
         )}
       </div>
       <div className="text-right shrink-0">
@@ -153,18 +160,6 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
             </div>
           </div>
         )}
-
-        {/* Summary card: total only (annual fee shown in primary box above) */}
-        <div className="grid grid-cols-1 gap-4">
-          <div className="p-4 rounded-lg border">
-            <div className="flex items-center gap-2 mb-2">
-              <GraduationCap className="h-4 w-4 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Estimated Total (course duration)</p>
-            </div>
-            <p className="text-2xl font-bold">${fees.estimatedTotalFee.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground mt-1">Based on primary preference</p>
-          </div>
-        </div>
 
         {/* HECS-HELP */}
         <div className="p-4 rounded-lg border bg-muted/30">
