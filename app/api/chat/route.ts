@@ -1,5 +1,40 @@
 import { NextResponse } from "next/server"
 
+// --- Rate limit (per IP, fixed window) ---
+const MAX_QUESTIONS_PER_HOUR =
+  typeof process.env.CHAT_MAX_QUESTIONS_PER_HOUR !== "undefined"
+    ? Math.max(1, parseInt(process.env.CHAT_MAX_QUESTIONS_PER_HOUR, 10) || 20)
+    : 20
+const WINDOW_MS =
+  typeof process.env.CHAT_RATE_LIMIT_WINDOW_MS !== "undefined"
+    ? Math.max(60_000, parseInt(process.env.CHAT_RATE_LIMIT_WINDOW_MS, 10) || 3_600_000)
+    : 3_600_000 // 1 hour
+
+type RateLimitEntry = { count: number; resetAt: number }
+const rateLimitStore = new Map<string, RateLimitEntry>()
+
+function getClientId(req: Request): string {
+  const forwarded = req.headers.get("x-forwarded-for")
+  const realIp = req.headers.get("x-real-ip")
+  const ip = forwarded?.split(",")[0]?.trim() || realIp?.trim() || "unknown"
+  return ip
+}
+
+function checkRateLimit(clientId: string): { allowed: boolean; remaining: number; resetAt: number } {
+  const now = Date.now()
+  let entry = rateLimitStore.get(clientId)
+
+  if (!entry || now >= entry.resetAt) {
+    entry = { count: 0, resetAt: now + WINDOW_MS }
+    rateLimitStore.set(clientId, entry)
+  }
+
+  entry.count += 1
+  const allowed = entry.count <= MAX_QUESTIONS_PER_HOUR
+  const remaining = Math.max(0, MAX_QUESTIONS_PER_HOUR - entry.count)
+  return { allowed, remaining, resetAt: entry.resetAt }
+}
+
 const SYSTEM_PROMPT = `You are the in-app assistant for CampusCompass, a planning hub for NSW high school students (especially Year 12 and 2027 UAC applicants) transitioning to university. Your role is to answer questions about their plan: UAC, fees, benefits, NSW universities, commute, and living costs.
 
 **In scope — answer clearly and concisely:**
@@ -27,6 +62,25 @@ const SYSTEM_PROMPT = `You are the in-app assistant for CampusCompass, a plannin
 
 export async function POST(req: Request) {
   try {
+    const clientId = getClientId(req)
+    const { allowed, remaining, resetAt } = checkRateLimit(clientId)
+    if (!allowed) {
+      const retryAfter = Math.ceil((resetAt - Date.now()) / 1000)
+      return NextResponse.json(
+        {
+          error: "You've reached the limit of questions for this hour. Please try again later.",
+          retryAfterSeconds: retryAfter,
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(retryAfter),
+            "X-RateLimit-Remaining": "0",
+          },
+        }
+      )
+    }
+
     const { messages } = (await req.json()) as {
       messages: Array<{ role: "user" | "assistant"; content: string }>
     }
@@ -97,7 +151,15 @@ export async function POST(req: Request) {
       data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ??
       "I couldn't generate a response. Please try again."
 
-    return NextResponse.json({ content: text })
+    return NextResponse.json(
+      { content: text },
+      {
+        headers: {
+          "X-RateLimit-Remaining": String(remaining),
+          "X-RateLimit-Limit": String(MAX_QUESTIONS_PER_HOUR),
+        },
+      }
+    )
   } catch (e) {
     console.error("Chat API error:", e)
     return NextResponse.json(

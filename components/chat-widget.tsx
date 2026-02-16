@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import ReactMarkdown from "react-markdown"
 import { MessageCircle, X, Send, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -94,12 +95,12 @@ export function ChatWidget() {
       {/* Chat panel */}
       {isOpen && (
         <div
-          className="fixed bottom-6 right-6 z-50 flex h-[500px] max-h-[70vh] w-[380px] max-w-[calc(100vw-3rem)] flex-col rounded-xl border bg-card shadow-xl"
+          className="fixed bottom-6 right-6 z-50 flex h-[750px] max-h-[85vh] w-[570px] max-w-[calc(100vw-3rem)] flex-col rounded-xl border bg-card shadow-xl"
         >
           <div className="flex shrink-0 items-start justify-between gap-2 border-b px-4 py-3">
             <div>
-              <h3 className="font-semibold">Ask about your plan</h3>
-              <p className="text-xs text-muted-foreground">
+              <h3 className="text-[1.35rem] font-semibold">Ask about your plan</h3>
+              <p className="text-[0.9rem] text-muted-foreground">
                 UAC, fees, benefits, unis & more
               </p>
             </div>
@@ -118,7 +119,7 @@ export function ChatWidget() {
           <ScrollArea className="min-h-0 flex-1">
             <div className="p-3">
               {messages.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-[1.05rem] text-muted-foreground">
                   Ask a question about university, UAC, fees, or benefits. I’ll
                   do my best to help — for official decisions, check UAC and
                   Services Australia.
@@ -135,19 +136,29 @@ export function ChatWidget() {
                     >
                       <div
                         className={cn(
-                          "max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap break-words",
+                          "max-w-[85%] rounded-lg px-3 py-2 text-[1.05rem] whitespace-pre-wrap break-words [&_p]:mt-0 [&_p]:mb-1.5 [&_p:last-child]:mb-0 [&_ul]:my-1 [&_ul]:list-inside [&_ol]:my-1 [&_ol]:list-inside [&_li]:my-0.5 [&_h1]:mt-0 [&_h2]:mt-0 [&_h3]:mt-0 [&_h1]:mb-1 [&_h2]:mb-1 [&_h3]:mb-1 [&_a]:underline [&_strong]:font-semibold",
                           m.role === "user"
                             ? "bg-lime text-foreground"
                             : "bg-muted"
                         )}
                       >
-                        {m.content}
+                        <ReactMarkdown
+                          components={{
+                            a: ({ href, children }) => (
+                              <a href={href} target="_blank" rel="noopener noreferrer" className="underline">
+                                {children}
+                              </a>
+                            ),
+                          }}
+                        >
+                          {m.content}
+                        </ReactMarkdown>
                       </div>
                     </div>
                   ))}
                   {isLoading && (
                     <div className="flex justify-start">
-                      <div className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-sm">
+                      <div className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-[1.05rem]">
                         <Loader2 className="size-4 animate-spin" />
                         <span>Thinking…</span>
                       </div>
@@ -172,7 +183,7 @@ export function ChatWidget() {
                   }
                 }}
                 rows={2}
-                className="min-h-0 resize-none"
+                className="min-h-0 resize-none text-[1.05rem]"
                 disabled={isLoading}
               />
               <Button
@@ -184,7 +195,7 @@ export function ChatWidget() {
                 <Send className="size-4" />
               </Button>
             </div>
-            <p className="mt-2 text-[10px] text-muted-foreground">
+            <p className="mt-2 text-[12px] text-muted-foreground">
               Answers are indicative. Check UAC, universities and Services
               Australia for official information.
             </p>

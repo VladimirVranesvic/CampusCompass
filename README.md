@@ -9,6 +9,8 @@
 ## Chat (AI assistant)
 A floating chat widget (bottom-right) lets users ask questions about UAC, fees, benefits, and universities. It uses Google Gemini (free tier). Set `GEMINI_API_KEY` in `.env.local` — get a key at [Google AI Studio](https://aistudio.google.com/app/apikey). Without the key, the chat API returns a friendly error.
 
+**Rate limiting:** Chat is limited per IP to avoid abuse. Default: 20 questions per hour. Optional env: `CHAT_MAX_QUESTIONS_PER_HOUR` (default 20), `CHAT_RATE_LIMIT_WINDOW_MS` (default 3600000). When the limit is reached, the API returns 429 with a message to try again later; responses include `X-RateLimit-Remaining` and `X-RateLimit-Limit` headers.
+
 ---
 
 ### Sources
@@ -18,77 +20,6 @@ UAC Dates - https://www.uac.edu.au/assets/documents/ug-fact-sheets/ug-fact-sheet
 
 ## Travel Planner 
 ### Overview
-
-
-### What can be improved:
-1. Documentation
-    - Could be expanded for travel planner and other modules
-
-2. Error Handling 
-    - Generic errors instead of specific messages
-
-3. UX Enhancements:
-    - No loading spinner
-    - Only shows fastest route (not multiple options)
-    - No real-time departure times
-    - No service disruption alerts
-
-4. Performance 
-    - No API response caching or request debouncing
-
-5. Monitoring 
-    - No error logging or rate limit tracking
-
-6. Testing 
-    - No automated tests
-
-##### Additional Data needed from the questionaire (More accurately determine travel details)
-    1. Time & Schedule Details
-        Class start time (e.g., 9am, 2pm, 6pm)
-            - Why: NSW Transport API can provide time-specific routes with actual service schedules
-            - Impact: Peak vs off-peak affects both availability and costs
-        Days per week attending (e.g., 2-3 days, 4-5 days, daily)
-            - Why: Determines weekly Opal cap relevance ($50 adult/$25 concession)
-        Typical departure time preference
-            - Why: Morning peak (7-9am) has more frequent services but more crowded
-
-    2. Concession Status ⭐ MOST IMPORTANT
-        Student concession card eligibility
-            - Impact: ~50% discount on fares! Your current calculation doesn't account for this
-            - A $5 adult fare becomes $2.50 with concession
-        Age bracket (under 16, 16-18, 18+, 60+)
-            - Why: Different fare structures for youth/seniors
-
-    3. Accessibility Requirements
-        Mobility needs (wheelchair accessible, elevator required, etc.)
-            - Why: NSW API has excludedMeans and impaired parameters for accessible routing
-            - Can filter out non-accessible services
-        Maximum comfortable walking distance (5min, 10min, 15min+)
-            - Why: Affects route options (some routes have longer walks to stops)
-
-    4. Location Precision
-        Specific street address (optional, instead of just postcode)
-            - Why: Postcodes can cover large areas - a street address is more precise
-            - Example: Postcode 2000 covers CBD from Circular Quay to Central Station
-        Preferred starting point (home, work, other)
-            - Why: Some students commute from part-time job locations
-
-    5. Travel Preferences
-        Preferred transport modes (train only, bus+train, any)
-            - Why: NSW API supports excludedMeans parameter to filter modes
-        Maximum acceptable transfers (0, 1, 2+)
-            - Why: More transfers = faster route but less convenient
-        Whether they have a driver's license
-            - Why: Compare driving costs vs public transport
-
-    6. Frequency & Context
-        Semester dates or when they plan to start
-            - Why: Can calculate annual costs more accurately
-            - Can warn about service changes during university breaks
-
-
-
-
 
 
 ### Sources
@@ -103,15 +34,14 @@ Trip API - https://opendata.transport.nsw.gov.au/data/dataset/trip-planner-apis
 
 ### Sources
 Rental Prices - https://www.nsw.gov.au/housing-and-construction/rental-forms-surveys-and-data/rental-bond-data
-University Accomidation data
-    1. Univerisity of Sydney - 
-    2. University of New South Wales
-    3. Macquaire University
-    4. University of Technology Sydney
-    5. Australian Catholic University 
-    6. Western Sydney University
-    7. Southern Cross University 
 
+
+Supabase rental table key 
+- Date that the bond was lodged with Fair Trading. For bonds lodged using Rental Bonds Online, this is the date that the agent or landlord completed the lodgement process
+- Postcode of the rented premises address
+- Type of rented premises as provided by the agent of landlord. (F) Flat/unit; (H) House; (T) Terrace/townhouse/semi-detached; (O) Other; (U) Unknown.  A Dwelling Type of ‘Other’ may include rented rooms, garages and car spaces.
+- Number of bedrooms as provided by the agent or landlord; (U) unknown. A value of ‘0’ bedrooms may indicate a bedsitter or studio apartment, or rented premises such as a garage or car space.
+- Weekly rent amount as provided by the agent or landlord; (U) unknown
 
 ---
 
@@ -123,4 +53,10 @@ University Accomidation data
 
 
 ### Other tools
-- https://www.uac.edu.au/atar-compass/
+Atar Calculator
+ATAR Compass - https://www.uac.edu.au/atar-compass/
+
+Scholarships
+Good Universities Guide - https://www.gooduniversitiesguide.com.au/course-provider/search?simple_institution_types=university&states=nsw&page=1
+
+
