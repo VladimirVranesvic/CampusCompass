@@ -43,7 +43,7 @@ export function PersonalizedChecklist({ checklist, userData }: PersonalizedCheck
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Your Personalized Checklist</CardTitle>
+            <CardTitle>Your Checklist</CardTitle>
             <CardDescription>
               Track your progress: {completedCount} of {totalCount} tasks completed
             </CardDescription>

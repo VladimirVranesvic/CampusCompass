@@ -35,7 +35,7 @@ export function UACTimeline({ timeline }: UACTimelineProps) {
       <CardHeader>
         <CardTitle>UAC Application Deadlines</CardTitle>
         <CardDescription>
-          Your next apply-by date is shown below. Open the dropdown to see all round deadlines.
+          Your next apply-by date is shown below. Open the dropdown to see all deadlines and dates.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -114,7 +114,7 @@ export function UACTimeline({ timeline }: UACTimelineProps) {
 
         {/* Important Dates – dropdown list of offer release dates */}
         <div>
-          <h3 className="font-semibold mb-3">Important Dates</h3>
+          <h3 className="font-semibold mb-3">Offer dates</h3>
           <Collapsible>
             <CollapsibleTrigger className="flex w-full items-center justify-between gap-2 rounded-lg border bg-muted/30 px-4 py-3 text-left text-sm font-medium transition-colors hover:bg-muted/50 [&[data-state=open]>svg]:rotate-180">
               View all offer release dates

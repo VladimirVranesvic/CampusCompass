@@ -1,8 +1,11 @@
 "use client"
 
+import { useState, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { MapPin, Clock, DollarSign, Train, ChevronDown } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { MapPin, Clock, DollarSign, Train, ChevronDown, Loader2 } from "lucide-react"
 
 interface CommutePlannerProps {
   commuteData: Array<{
@@ -25,19 +28,84 @@ interface CommutePlannerProps {
   userData: any
 }
 
+const normalizePostcode = (p: string) => String(p ?? "").replace(/\D/g, "").padStart(4, "0").slice(0, 4)
+
 export function CommutePlanner({ commuteData, userData }: CommutePlannerProps) {
+  const initialPostcode = normalizePostcode(String(userData?.postcode ?? "")) || "2000"
+  const [fromPostcode, setFromPostcode] = useState(initialPostcode)
+  const [displayData, setDisplayData] = useState(commuteData)
+  const [loading, setLoading] = useState(false)
+
+  const fetchCommute = useCallback(
+    async (postcode: string) => {
+      const pc = normalizePostcode(postcode)
+      if (pc.length !== 4 || !commuteData.length) return
+      setLoading(true)
+      try {
+        const res = await fetch("/api/commute", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            postcode: pc,
+            universities: commuteData.map((c) => c.university),
+          }),
+        })
+        if (!res.ok) throw new Error("Failed to fetch commute")
+        const data = await res.json()
+        setDisplayData(data)
+        setFromPostcode(pc)
+      } catch (e) {
+        console.error(e)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [commuteData]
+  )
+
+  const handlePostcodeSubmit = () => {
+    const pc = normalizePostcode(fromPostcode)
+    if (pc.length === 4 && pc !== displayData[0]?.fromPostcode) fetchCommute(pc)
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Commute & Travel Planner</CardTitle>
+        <p className="font-bold italic text-sm">Live updates when reloaded.</p>
         <CardDescription>
-          Travel times and costs from your postcode ({userData.postcode}) to your target
-          universities. Costs use Opal fare caps (e.g. train max $5.36), so longer trips may show the same capped amount.
+          Travel times and costs from your postcode to your target
+          universities. Costs use Opal single-trip adult caps by distance and mode (train/metro bands, bus bands, ferry cap). Capped fares apply per trip.
         </CardDescription>
+        <div className="flex flex-wrap items-end gap-3 pt-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="commute-from-postcode" className="text-sm text-muted-foreground">
+              Travel from postcode
+            </Label>
+            <Input
+              id="commute-from-postcode"
+              type="text"
+              inputMode="numeric"
+              placeholder="e.g. 2088"
+              maxLength={4}
+              value={fromPostcode}
+              onChange={(e) => setFromPostcode(e.target.value.replace(/\D/g, "").slice(0, 4))}
+              onBlur={handlePostcodeSubmit}
+              onKeyDown={(e) => e.key === "Enter" && handlePostcodeSubmit()}
+              className="w-28"
+            />
+          </div>
+          {loading && (
+            <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Updating…
+            </span>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {commuteData.map((commute, index) => (
+          {displayData.map((commute, index) => (
             <div key={index} className="p-4 rounded-lg border space-y-3">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2">

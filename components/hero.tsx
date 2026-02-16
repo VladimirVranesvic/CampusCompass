@@ -1,7 +1,6 @@
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ArrowRight } from "lucide-react"
 
 export function Hero() {
   return (
@@ -10,16 +9,8 @@ export function Hero() {
         <div className="grid items-center gap-12 lg:grid-cols-2">
           {/* Content */}
           <div className="max-w-xl">
-            <div className="mb-6 flex items-center gap-3 text-sm text-muted-foreground">
-              <span>For 2026 UAC applicants</span>
-              <span className="h-4 w-px bg-border" />
-              <a
-                href="#updates"
-                className="flex items-center gap-1 transition-colors hover:text-foreground"
-              >
-                Discover updates
-                <ArrowRight className="h-3 w-3" />
-              </a>
+            <div className="mb-6 text-sm text-muted-foreground">
+              <span>For 2027 UAC applicants</span>
             </div>
 
             <h1 className="text-balance text-5xl font-bold tracking-tight md:text-6xl lg:text-7xl">

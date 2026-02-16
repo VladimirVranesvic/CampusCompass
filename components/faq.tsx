@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button"
-
 const faqs = [
   {
     question: "How do I apply via UAC?",
@@ -35,7 +33,7 @@ const faqs = [
 
 export function FAQ() {
   return (
-    <section id="support" className="bg-sage py-20 md:py-28">
+    <section id="faq" className="bg-sage py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mx-auto max-w-3xl text-center">
@@ -58,16 +56,6 @@ export function FAQ() {
               <p className="mt-3 text-muted-foreground leading-relaxed">{faq.answer}</p>
             </div>
           ))}
-        </div>
-
-        {/* Help CTA */}
-        <div className="mt-16 text-center">
-          <p className="text-muted-foreground">
-            Still have questions? Our team is here to help—just reach out.
-          </p>
-          <Button variant="outline" className="mt-4 rounded-full bg-transparent">
-            Support
-          </Button>
         </div>
       </div>
     </section>

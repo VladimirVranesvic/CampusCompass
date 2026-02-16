@@ -1,4 +1,5 @@
 import Image from "next/image"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
 const floatingImages = [
@@ -16,11 +17,6 @@ const floatingImages = [
     src: "/images/laptop-calendar.jpg",
     alt: "Laptop with calendar",
     className: "absolute bottom-24 left-8 h-36 w-48 rounded-xl md:bottom-32 md:left-16 md:h-80 md:w-80",
-  },
-  {
-    src: "/images/tablet-app.jpg",
-    alt: "Tablet with app interface",
-    className: "absolute bottom-48 left-1/2 h-40 w-32 -translate-x-1/2 rounded-xl md:h-52 md:w-60 hidden md:block",
   },
   {
     src: "/images/group-meeting.jpg",
@@ -56,18 +52,55 @@ export function CTASection() {
           journey today
         </h2>
 
-        <p className="mx-auto mt-6 max-w-lg text-muted-foreground">
-          Discover upcoming tools, tips, and checklists to personalize your
-          transition, stay organized, and feel confident as you start uni life.
+        <p className="mx-auto mt-6 max-w-lg text-center text-muted-foreground">
+          Explore official resources: compare courses and unis in NSW, check ATAR
+          requirements, and find info on studying and living in Australia.
         </p>
 
-        <Button
-          size="lg"
-          variant="outline"
-          className="mt-8 border-foreground bg-transparent hover:bg-foreground hover:text-background"
-        >
-          {"See what's next"}
-        </Button>
+        <div className="mt-12 flex flex-wrap items-center justify-center gap-6">
+          <Button
+            size="lg"
+            variant="outline"
+            className="border-foreground bg-transparent hover:bg-foreground hover:text-background"
+            asChild
+          >
+            <Link
+              href="https://www.studyaustralia.gov.au/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Study Australia
+            </Link>
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            className="border-foreground bg-transparent hover:bg-foreground hover:text-background"
+            asChild
+          >
+            <Link
+              href="https://www.gooduniversitiesguide.com.au/course-provider/search?simple_institution_types=university&states=nsw&page=1"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Good Universities Guide
+            </Link>
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            className="border-foreground bg-transparent hover:bg-foreground hover:text-background"
+            asChild
+          >
+            <Link
+              href="https://www.uac.edu.au/atar-compass/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              ATAR Compass
+            </Link>
+          </Button>
+        </div>
       </div>
     </section>
   )

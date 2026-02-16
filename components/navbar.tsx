@@ -13,13 +13,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Menu, X, GraduationCap, ChevronDown, User as UserIcon, LogOut } from "lucide-react"
-import { cn } from "@/lib/utils"
-
-const navItems = [
-  { label: "Tools", href: "#tools" },
-  { label: "Support", href: "#support" },
-  { label: "Blog", href: "#blog" },
-]
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -56,21 +49,6 @@ export function Navbar() {
           </div>
           <span className="text-lg font-semibold">CampusCompass</span>
         </Link>
-
-        {/* Desktop Navigation */}
-        <nav className="hidden items-center gap-1 md:flex">
-          {navItems.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-1 px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              )}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
 
         {/* Desktop: Auth + CTA */}
         <div className="hidden items-center gap-2 md:flex">
@@ -129,16 +107,6 @@ export function Navbar() {
       {isOpen && (
         <div className="border-t md:hidden">
           <nav className="flex flex-col px-4 py-4">
-            {navItems.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                className="flex items-center justify-between py-3 text-sm font-medium text-muted-foreground hover:text-foreground"
-                onClick={() => setIsOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ))}
             {user && (
               <Link
                 href="/plans"

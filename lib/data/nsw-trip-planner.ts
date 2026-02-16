@@ -239,7 +239,7 @@ function parseJourneyToRouteResult(
     routeDetails: {
       walkingToStop: Math.round(totalWalkingTime),
       transitTime: Math.round(transitTime),
-      walkingFromStop: 0,
+      walkingFromStop: Math.round(walkingFromStop),
       transfers,
     },
   }
@@ -277,32 +277,52 @@ function calculateOpalCost(distance: number, travelTime: number, transportModes:
   return calculateOpalCostWithDetails(distance, travelTime, transportModes).cost
 }
 
+/**
+ * Opal single-trip adult fare caps by distance band (from July 2025, IPART determination).
+ * transportnsw.info/tickets-fares/fares; band structure used for cap only.
+ */
+function getTrainMetroCapKm(distanceKm: number): number {
+  if (distanceKm <= 10) return 5.2
+  if (distanceKm <= 20) return 6.5
+  if (distanceKm <= 35) return 7.4
+  if (distanceKm <= 65) return 9.9
+  return 12.8
+}
+
+function getBusCapKm(distanceKm: number): number {
+  if (distanceKm <= 3) return 4.0
+  if (distanceKm <= 8) return 5.4
+  return 6.9
+}
+
+const FERRY_SINGLE_TRIP_CAP = 9.2
+
 function calculateOpalCostWithDetails(
   distance: number,
   _travelTime: number,
   transportModes: string[] = []
 ): { cost: number; uncappedEstimate: number; isCapped: boolean } {
-  // APPROXIMATION: Opal uses distance BANDS with fixed fares per band, not a continuous per-km rate.
-  // Official structure: transportnsw.info/tickets-fares/fares, IPART Opal determinations.
-  // The values below are a simple linear approximation (base + perKm) to get a rough estimate;
-  // min/max are in the ballpark of band endpoints. For accurate fares use official band tables.
-  // Train/Metro: approx $3.73-$5.36 (perKm 0.25 is approximate, not from official docs)
-  // Bus: approx $2.50-$4.90; Ferry: approx $6.20-$9.20
+  // Opal uses distance bands; we estimate a linear fare then cap by the band maximum.
   const hasFerry = transportModes.includes('Ferry')
-  const hasTrain = transportModes.includes('Train') || transportModes.includes('Metro')
+  const hasTrain =
+    transportModes.includes('Train') ||
+    transportModes.includes('Metro') ||
+    transportModes.includes('Light Rail')
 
-  let baseCost = 2.50
-  let perKm = 0.20
-  let maxCost = 4.90
+  let baseCost = 2.5
+  let perKm = 0.2
+  let maxCost: number
 
   if (hasFerry) {
-    baseCost = 6.20
-    perKm = 0.30
-    maxCost = 9.20
+    baseCost = 6.2
+    perKm = 0.3
+    maxCost = FERRY_SINGLE_TRIP_CAP
   } else if (hasTrain) {
     baseCost = 3.73
-    perKm = 0.25  // approximate; official fares use distance bands (0–10 km, 10–20 km, etc.)
-    maxCost = 5.36
+    perKm = 0.25
+    maxCost = getTrainMetroCapKm(distance)
+  } else {
+    maxCost = getBusCapKm(distance)
   }
 
   const uncappedEstimate = baseCost + distance * perKm

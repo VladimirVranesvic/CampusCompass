@@ -85,21 +85,14 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
           {entry.courseYears} {entry.courseYears === 1 ? "year" : "years"}
         </p>
         {entry.facultyUrl && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-2 border-lime bg-lime/20 text-foreground hover:bg-lime-hover hover:border-lime"
-            asChild
+          <a
+            href={entry.facultyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-md border border-border bg-background text-foreground hover:underline"
           >
-            <a
-              href={entry.facultyUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5"
-            >
-              Learn more <ExternalLink className="size-3" />
-            </a>
-          </Button>
+            Learn more <ExternalLink className="size-3" />
+          </a>
         )}
       </div>
       <div className="text-right shrink-0">
@@ -116,7 +109,7 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Fees & HELP Loan Calculator</CardTitle>
+        <CardTitle>Course Preferences and Information</CardTitle>
         <CardDescription>
           Estimated course fees and HECS-HELP loan information
         </CardDescription>
@@ -192,7 +185,7 @@ export function FeesCalculator({ fees, userData }: FeesCalculatorProps) {
           <Button
             variant="outline"
             size="sm"
-            className="mt-3 border-lime bg-lime/20 text-foreground hover:bg-lime-hover hover:border-lime"
+            className="mt-3 bg-background/80 border-border text-foreground hover:bg-muted/50"
             asChild
           >
             <a

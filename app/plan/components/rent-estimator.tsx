@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
-import { Home, MapPin, DollarSign, BedDouble, Loader2 } from "lucide-react"
+import { Home, MapPin, BedDouble, Loader2 } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
 type RentByType = { apartment: number; house: number; townhouse: number }
@@ -247,26 +247,22 @@ export function RentEstimator({ rentalData, userData }: RentEstimatorProps) {
                     <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
                     <div>
                       <p className="font-bold">{suburb.name}</p>
-                      <p className="text-sm text-muted-foreground">{suburb.distance} away</p>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm pl-6">
                     <span className="flex items-center gap-1">
-                      <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
                       <span className="text-muted-foreground">Apartment:</span>
                       <span className="font-semibold">
                         {suburbRent.apartment > 0 ? `$${suburbRent.apartment}` : "—"}
                       </span>
                     </span>
                     <span className="flex items-center gap-1">
-                      <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
                       <span className="text-muted-foreground">House:</span>
                       <span className="font-semibold">
                         {suburbRent.house > 0 ? `$${suburbRent.house}` : "—"}
                       </span>
                     </span>
                     <span className="flex items-center gap-1">
-                      <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
                       <span className="text-muted-foreground">Townhouse:</span>
                       <span className="font-semibold">
                         {suburbRent.townhouse > 0 ? `$${suburbRent.townhouse}` : "—"}

@@ -315,7 +315,8 @@ export async function getRentalAveragesByPostcode(
   const isGenericLabel =
     !locationLabel ||
     /^Current dwelling$/i.test(locationLabel) ||
-    /^Preferred location\s*\(?\d*\)?$/i.test(locationLabel)
+    /^Preferred location\s*\(?\d*\)?$/i.test(locationLabel) ||
+    /^Postcode\s+\d{4}$/i.test(locationLabel)
   const suburbName = isGenericLabel ? lookedUp ?? locationLabel : locationLabel
   return {
     postcode: normalized,
@@ -369,7 +370,7 @@ export async function getNearbySuburbNamesOnly(
 
   if (!allPostcodes?.length) return []
 
-  const withDistance = allPostcodes
+  const sorted = allPostcodes
     .map((row: { postcode: number; lat: number; long: number; locality?: string }) => ({
       postcode: String(row.postcode).padStart(4, "0"),
       name: row.locality || `Postcode ${row.postcode}`,
@@ -377,10 +378,15 @@ export async function getNearbySuburbNamesOnly(
     }))
     .filter((r) => r.postcode !== NORMALIZE_POSTCODE(postcode) && r.distanceKm > 0)
     .sort((a, b) => a.distanceKm - b.distanceKm)
-    .slice(0, limit)
+  const seen = new Set<string>()
+  const withDistance = sorted.filter((r) => {
+    if (seen.has(r.postcode)) return false
+    seen.add(r.postcode)
+    return true
+  }).slice(0, limit)
 
   return withDistance.map((r) => ({
-    name: r.name,
+    name: looksLikeSuburb(r.name) ? r.name : `Postcode ${r.postcode}`,
     distance: formatDistance(r.distanceKm),
   }))
 }
@@ -433,7 +439,7 @@ export async function getNearbySuburbsWithRent(
     return getNearbySuburbsFromRentalFallback(supabase, postcode, limit)
   }
 
-  const withDistance = allPostcodes
+  const withDistanceSorted = allPostcodes
     .map((row: { postcode: number; lat: number; long: number; locality?: string }) => ({
       postcode: String(row.postcode).padStart(4, "0"),
       locality: row.locality || `Postcode ${row.postcode}`,
@@ -443,7 +449,12 @@ export async function getNearbySuburbsWithRent(
     }))
     .filter((r) => r.postcode !== NORMALIZE_POSTCODE(postcode) && r.distanceKm > 0)
     .sort((a, b) => a.distanceKm - b.distanceKm)
-    .slice(0, limit)
+  const seen = new Set<string>()
+  const withDistance = withDistanceSorted.filter((r) => {
+    if (seen.has(r.postcode)) return false
+    seen.add(r.postcode)
+    return true
+  }).slice(0, limit)
 
   const results: Array<{
     name: string
@@ -460,8 +471,10 @@ export async function getNearbySuburbsWithRent(
       [medianWeeklyRent.apartment, medianWeeklyRent.house, medianWeeklyRent.townhouse].filter(Boolean).reduce((a, b) => a + b, 0) /
       [medianWeeklyRent.apartment, medianWeeklyRent.house, medianWeeklyRent.townhouse].filter(Boolean).length || 0
     if (medianRent > 0 || medianWeeklyRent.apartment || medianWeeklyRent.house || medianWeeklyRent.townhouse) {
+      const suburbName = await getSuburbForPostcode(supabase, pc.postcode)
+      const name = suburbName ?? (looksLikeSuburb(pc.locality) ? pc.locality : null) ?? `Postcode ${pc.postcode}`
       results.push({
-        name: pc.locality,
+        name,
         distance: formatDistance(pc.distanceKm),
         medianRent: Math.round(medianRent),
         medianWeeklyRent,

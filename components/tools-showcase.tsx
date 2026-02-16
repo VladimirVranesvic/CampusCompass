@@ -8,71 +8,84 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
-import { Calendar, HelpCircle, MapPin, Award, Calculator } from "lucide-react"
+import { Calendar, ListTodo, MapPin, Home, HelpCircle, Calculator } from "lucide-react"
 
 const tools = [
   {
-    id: "timeline",
-    icon: Calendar,
-    title: "UAC Timeline & Calendar",
+    id: "checklist",
+    icon: ListTodo,
+    title: "Your Checklist",
     description:
-      "Never miss a deadline with our comprehensive UAC timeline. Track offer rounds, application deadlines, and important university dates all in one calendar view.",
+      "Track your progress with an actionable checklist—UAC steps, benefits, and more—so nothing slips through the cracks.",
     features: [
-      "Personalized deadline reminders",
-      "Sync with your calendar app",
-      "Offer round countdown",
+      "Next steps at a glance",
+      "Track tasks completed",
+      "Stay on top of applications",
     ],
     href: null as string | null,
   },
   {
-    id: "benefits",
-    icon: HelpCircle,
-    title: "Benefits & Concessions Quiz",
+    id: "timeline",
+    icon: Calendar,
+    title: "UAC Application Deadlines and Dates",
     description:
-      "Discover what government support you may be eligible for, including Youth Allowance, ABSTUDY, and Opal concessions.",
+      "Never miss a deadline. View your next apply-by date and open the dropdown to see all application and offer release dates.",
     features: [
-      "Quick eligibility checker",
-      "Step-by-step application guides",
-      "Centrelink tips & resources",
+      "Application deadline reminders",
+      "Offer round dates",
+      "Key UAC dates in one place",
     ],
     href: null as string | null,
   },
   {
     id: "commute",
     icon: MapPin,
-    title: "Commute & Rent Planner",
+    title: "Commute & Travel Planner",
     description:
-      "Compare travel times from different suburbs and estimate rent costs to find the perfect balance for your uni life.",
+      "Travel times and costs from your postcode to your target universities. Change postcode to compare. Uses Opal single-trip caps.",
     features: [
-      "Real-time travel estimates",
-      "Suburb comparison tool",
-      "Budget calculator",
+      "Live updates when reloaded",
+      "Travel time and cost per trip",
+      "Route breakdown and transport options",
     ],
     href: null as string | null,
   },
   {
-    id: "scholarships",
-    icon: Award,
-    title: "Scholarship Finder",
+    id: "rent",
+    icon: Home,
+    title: "Rent & Living Cost Estimates",
     description:
-      "Get matched with scholarships based on your background, field of study, and circumstances. Never miss funding opportunities.",
+      "Rental data for your area: average weekly rent by dwelling type and bedroom count, plus nearby suburbs comparison.",
     features: [
-      "Personalized matches",
-      "Application deadline alerts",
-      "Eligibility filters",
+      "Apartment, house, townhouse averages",
+      "Filter by number of bedrooms",
+      "Nearby suburbs with real names",
+    ],
+    href: null as string | null,
+  },
+  {
+    id: "benefits",
+    icon: HelpCircle,
+    title: "Benefits & Support Eligibility",
+    description:
+      "Government support you may be eligible for: Youth Allowance and Rent Assistance estimates from your questionnaire, plus next steps.",
+    features: [
+      "Youth Allowance estimate (household income, study load, personal income & assets, siblings)",
+      "Rent Assistance estimate when paying rent",
+      "Next steps and links to Services Australia",
     ],
     href: null as string | null,
   },
   {
     id: "fees",
     icon: Calculator,
-    title: "Fees & HELP Calculator",
+    title: "Course Preferences and Information",
     description:
-      "Understand your course fees and HELP loan implications. Calculate repayments and plan your financial future.",
+      "Estimated course fees by university and faculty, HECS-HELP info, upfront payment option, and links to faculty pages.",
     features: [
-      "Course fee breakdown",
-      "HECS-HELP repayment calculator",
-      "Upfront payment options",
+      "Primary preference and other options",
+      "Course fee breakdown by university",
+      "HECS-HELP and upfront payment info",
     ],
     href: null as string | null,
   },

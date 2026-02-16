@@ -1,46 +1,34 @@
 "use client"
 
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Facebook, Instagram, Twitter, Linkedin, Youtube } from "lucide-react"
-import { useState } from "react"
 
 const exploreLinks = [
   { label: "About", href: "#about" },
-  { label: "Contact", href: "#contact" },
+  { label: "Tools", href: "#tools" },
   { label: "FAQ", href: "#faq" },
-  { label: "Support", href: "#support" },
-  { label: "Blog", href: "#blog" },
 ]
 
 const resourceLinks = [
-  { label: "Timeline", href: "#timeline" },
-  { label: "Benefits", href: "#benefits" },
-  { label: "Daily", href: "#daily" },
-  { label: "Fees", href: "#fees" },
-  { label: "Scholarships", href: "#scholarships" },
+  { label: "Create plan", href: "/plan" },
+  { label: "My plans", href: "/plans" },
+  { label: "Login", href: "/login" },
+  { label: "Create account", href: "/signup" },
 ]
 
-const socialLinks = [
-  { label: "Facebook", href: "#", icon: Facebook },
-  { label: "Instagram", href: "#", icon: Instagram },
-  { label: "Twitter", href: "#", icon: Twitter },
-  { label: "LinkedIn", href: "#", icon: Linkedin },
-  { label: "YouTube", href: "#", icon: Youtube },
+const otherToolsLinks = [
+  { label: "Study Australia", href: "https://www.studyaustralia.gov.au/" },
+  { label: "Good Universities Guide", href: "https://www.gooduniversitiesguide.com.au/course-provider/search?simple_institution_types=university&states=nsw&page=1" },
+  { label: "ATAR Compass", href: "https://www.uac.edu.au/atar-compass/" },
 ]
 
 export function Footer() {
-  const [email, setEmail] = useState("")
-  const [subscribeEmail, setSubscribeEmail] = useState("")
-
   return (
     <footer>
 
       {/* Main Footer */}
       <div className="bg-foreground py-12 text-background">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-10 md:grid-cols-3">
             {/* Explore */}
             <div>
               <h4 className="text-sm font-medium uppercase tracking-wider text-background/60">
@@ -79,61 +67,25 @@ export function Footer() {
               </ul>
             </div>
 
-            {/* Connect */}
+            {/* Other tools */}
             <div>
               <h4 className="text-sm font-medium uppercase tracking-wider text-background/60">
-                Connect
+                Other tools
               </h4>
               <ul className="mt-4 space-y-3">
-                {socialLinks.map((link) => (
+                {otherToolsLinks.map((link) => (
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="flex items-center gap-3 text-background/80 transition-colors hover:text-background"
+                      target={link.href.startsWith("http") ? "_blank" : undefined}
+                      rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                      className="text-background/80 transition-colors hover:text-background"
                     >
-                      <link.icon className="h-5 w-5" />
                       {link.label}
                     </Link>
                   </li>
                 ))}
               </ul>
-            </div>
-
-            {/* Subscribe */}
-            <div>
-              <h4 className="text-sm font-medium uppercase tracking-wider text-background/60">
-                Subscribe
-              </h4>
-              <p className="mt-4 text-background/80">Stay updated with uni tips & news.</p>
-              <form
-                className="mt-4"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  setSubscribeEmail("")
-                }}
-              >
-                <Input
-                  type="email"
-                  placeholder="Email"
-                  value={subscribeEmail}
-                  onChange={(e) => setSubscribeEmail(e.target.value)}
-                  required
-                  className="h-12 rounded-md border-background/20 bg-background/10 text-background placeholder:text-background/50"
-                />
-                <Button
-                  type="submit"
-                  className="mt-3 h-12 w-full rounded-md bg-lime text-foreground hover:bg-lime-hover sm:w-auto sm:px-8"
-                >
-                  Subscribe
-                </Button>
-              </form>
-              <p className="mt-4 text-sm text-background/60">
-                By signing up, you agree to our{" "}
-                <Link href="#privacy" className="underline hover:text-background">
-                  Privacy
-                </Link>
-                .
-              </p>
             </div>
           </div>
 

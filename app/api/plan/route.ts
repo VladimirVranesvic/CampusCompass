@@ -4,7 +4,13 @@ import { calculateCommuteRoute } from "@/lib/data/nsw-trip-planner"
 import { parseBenefitsCSV, type BenefitDefinition } from "@/lib/data/benefits-parser"
 import { getAllMatchingFacultiesForUni, getAllAvailableFacultiesForUni } from "@/lib/data/fees-parser"
 import { getRentalAveragesByPostcode, getNearbySuburbNamesOnly } from "@/lib/data/rental-supabase"
-// Youth Allowance detailed calculation is now handled in the calculator component on results page
+import {
+  calculateYouthAllowance,
+  parseHouseholdIncome,
+  parsePersonalIncomeFortnightly,
+  type YouthAllowanceInput,
+} from "@/lib/data/youth-allowance-calculator"
+import { calculateRentAssistance } from "@/lib/data/rent-assistance-calculator"
 
 /** University campus postcodes (NSW) for rental data — same as geocoding. */
 const UNIVERSITY_POSTCODE: Record<string, string> = {
@@ -211,47 +217,224 @@ function evaluateBenefitEligibility(def: BenefitDefinition, userData: any): { el
   return { eligible: true }
 }
 
-function checkBasicYouthAllowanceEligibility(userData: any): { eligible: boolean; reason?: string } {
-  const age = typeof userData.age === 'number' ? userData.age : parseInt(String(userData.age ?? ''), 10)
+/** Map form living situation to calculator livingSituation */
+function mapLivingSituationForYA(formValue: string | undefined): YouthAllowanceInput["livingSituation"] {
+  if (!formValue) return "unsure"
+  switch (formValue) {
+    case "Staying at home":
+      return "home"
+    case "Renting/Moving out":
+      return "renting"
+    case "On-campus accommodation":
+      return "on-campus"
+    case "Remote/Regional area":
+      return "away"
+    case "Not sure yet":
+      return "unsure"
+    default:
+      return "unsure"
+  }
+}
+
+/** Map siblings form value to number (for parental income family pool) */
+function parseSiblingsReceivingPayments(value: string | undefined): number {
+  if (!value || value === "no") return 0
+  if (value === "yes-1") return 1
+  if (value === "yes-2") return 2
+  if (value === "yes-3plus") return 3
+  return 0
+}
+
+/** Build Youth Allowance input from plan questionnaire (Household Income, Study Load, Personal Income & Assets, Siblings). */
+function buildYouthAllowanceInput(userData: any): YouthAllowanceInput | null {
+  const age = typeof userData.age === "number" ? userData.age : parseInt(String(userData.age ?? ""), 10)
+  if (!Number.isFinite(age)) return null
+
   const studyLoadFullTime = userData.studyLoadFullTime === "yes"
   const concessionalStudyLoad = userData.concessionalStudyLoad === "yes"
-  
-  // Basic eligibility check only
-  if (age < 18 || age > 24) {
-    return { eligible: false, reason: `Age ${age} is outside the eligible range (18-24 years)` }
+  const isIndependent = userData.consideredIndependent === "yes"
+
+  const householdIncomeBand = userData.householdIncome
+  const parentalIncomeAnnual =
+    householdIncomeBand && householdIncomeBand !== "prefer-not-to-say"
+      ? parseHouseholdIncome(householdIncomeBand) ?? undefined
+      : undefined
+
+  const personalIncomeBand = userData.personalIncomeFortnightly
+  const personalIncomeFortnightly =
+    personalIncomeBand && personalIncomeBand !== "prefer-not-to-say"
+      ? parsePersonalIncomeFortnightly(personalIncomeBand) ?? undefined
+      : undefined
+
+  let personalAssets: number | undefined
+  if (userData.significantAssets === "yes" && userData.significantAssetsValue) {
+    const parsed = parseFloat(String(userData.significantAssetsValue).replace(/[^0-9.-]/g, ""))
+    if (Number.isFinite(parsed)) personalAssets = parsed
   }
-  
-  if (!studyLoadFullTime && !concessionalStudyLoad) {
-    return { eligible: false, reason: "Must be studying full-time (75%+ load) or have concessional study load" }
+
+  const siblingsReceivingPayments = parseSiblingsReceivingPayments(userData.siblingsReceivingPayments)
+
+  return {
+    age,
+    studyLoadFullTime,
+    concessionalStudyLoad,
+    isIndependent,
+    parentalIncomeAnnual,
+    siblingsReceivingPayments,
+    personalIncomeFortnightly,
+    personalAssets,
+    isHomeowner: false,
+    livingSituation: mapLivingSituationForYA(userData.livingSituation),
   }
-  
-  return { eligible: true }
+}
+
+/**
+ * Run Youth Allowance calculation and return eligibility plus formatted estimate for benefits triage.
+ * Uses Household Income, Study Load, Personal Income & Assets, and Siblings from the questionnaire.
+ * Logic and thresholds aligned with Services Australia / studyassist.gov.au (parental income test,
+ * personal income test, assets test, living-at-home vs away rates).
+ */
+function getYouthAllowanceEstimate(userData: any): {
+  eligible: boolean
+  reason?: string
+  estimatedAmount?: string
+  finalFortnightlyPayment: number
+} {
+  const input = buildYouthAllowanceInput(userData)
+  if (!input) {
+    return { eligible: false, reason: "Age or study details missing", finalFortnightlyPayment: 0 }
+  }
+
+  const result = calculateYouthAllowance(input)
+
+  if (!result.eligible && result.ineligibleReasons.length > 0) {
+    return {
+      eligible: false,
+      reason: result.ineligibleReasons[0],
+      estimatedAmount: undefined,
+      finalFortnightlyPayment: 0,
+    }
+  }
+
+  if (result.finalFortnightlyPayment > 0) {
+    return {
+      eligible: true,
+      estimatedAmount: `Approx. $${Math.round(result.finalFortnightlyPayment)} per fortnight (use calculator below for breakdown)`,
+      reason: undefined,
+      finalFortnightlyPayment: result.finalFortnightlyPayment,
+    }
+  }
+
+  return {
+    eligible: true,
+    estimatedAmount: "Payment reduced to $0 by income tests (see calculator for details)",
+    reason: undefined,
+    finalFortnightlyPayment: 0,
+  }
+}
+
+/**
+ * Rent Assistance estimate from questionnaire: rental budget (weekly), Youth Allowance amount, personal income.
+ * Uses 2026 thresholds; single + private rent unless we have more data.
+ */
+function getRentAssistanceEstimate(
+  userData: any,
+  youthAllowanceFortnightly: number
+): { eligible: boolean; estimatedAmount?: string; reason?: string } {
+  const livingSituation = userData?.livingSituation
+  const isRenting =
+    livingSituation === "Renting/Moving out" ||
+    livingSituation === "renting" ||
+    livingSituation === "moving_out"
+  if (!isRenting) {
+    return {
+      eligible: false,
+      estimatedAmount: undefined,
+      reason: "Rent Assistance applies when you pay rent (e.g. renting or moving out).",
+    }
+  }
+
+  const rentalBudgetWeekly = userData?.rentalBudget
+  const fortnightlyRent =
+    rentalBudgetWeekly != null && rentalBudgetWeekly !== ""
+      ? parseFloat(String(rentalBudgetWeekly).replace(/[^0-9.-]/g, "")) * 2
+      : 0
+
+  const personalIncomeBand = userData?.personalIncomeFortnightly
+  const personalIncomeFortnightly =
+    personalIncomeBand && personalIncomeBand !== "prefer-not-to-say"
+      ? parsePersonalIncomeFortnightly(personalIncomeBand) ?? undefined
+      : undefined
+
+  if (!Number.isFinite(fortnightlyRent) || fortnightlyRent <= 0) {
+    return {
+      eligible: true,
+      estimatedAmount: "Enter your rent in the calculator below for an estimate.",
+      reason: undefined,
+    }
+  }
+
+  const raResult = calculateRentAssistance({
+    fortnightlyAmount: fortnightlyRent,
+    rentType: "private",
+    householdType: "single",
+    basePaymentFortnightly: youthAllowanceFortnightly,
+    personalIncomeFortnightly,
+  })
+
+  if (!raResult.eligible) {
+    return {
+      eligible: true,
+      estimatedAmount: `Rent $${(fortnightlyRent / 2).toFixed(0)}/week may be below threshold — use calculator below.`,
+      reason: undefined,
+    }
+  }
+
+  const amount = Math.round(raResult.rentAssistanceFortnightly)
+  return {
+    eligible: true,
+    estimatedAmount: `Approx. $${amount} per fortnight (use calculator below for details)`,
+    reason: undefined,
+  }
 }
 
 function checkBenefitsEligibility(userData: any) {
   const definitions = parseBenefitsCSV()
   const benefits: any[] = []
   
-  // Check basic Youth Allowance eligibility (detailed calculation will be in calculator component)
-  const youthAllowanceEligibility = checkBasicYouthAllowanceEligibility(userData)
+  // Youth Allowance: estimate from questionnaire (Household Income, Study Load, Personal Income & Assets, Siblings)
+  const youthAllowanceEstimate = getYouthAllowanceEstimate(userData)
   const youthAllowanceDef = definitions.find(d => d.id === "youth_allowance")
-  
+
   if (youthAllowanceDef) {
     benefits.push({
       name: youthAllowanceDef.name,
-      eligible: youthAllowanceEligibility.eligible,
-      estimatedAmount: youthAllowanceEligibility.eligible
-        ? "Use calculator below for detailed estimate"
-        : undefined,
-      reason: youthAllowanceEligibility.reason,
+      eligible: youthAllowanceEstimate.eligible,
+      estimatedAmount: youthAllowanceEstimate.estimatedAmount,
+      reason: youthAllowanceEstimate.reason,
       nextSteps: youthAllowanceDef.nextSteps,
       learnMoreUrl: youthAllowanceDef.learnMoreUrl,
     })
   }
   
-  // Process other benefits (excluding Youth Allowance)
+  // Rent Assistance: estimate from questionnaire (rental budget, Youth Allowance amount, personal income)
+  const rentAssistanceEstimate = getRentAssistanceEstimate(userData, youthAllowanceEstimate.finalFortnightlyPayment)
+  const rentAssistanceDef = definitions.find(d => d.id === "rent_assistance")
+
+  if (rentAssistanceDef) {
+    benefits.push({
+      name: rentAssistanceDef.name,
+      eligible: rentAssistanceEstimate.eligible,
+      estimatedAmount: rentAssistanceEstimate.estimatedAmount,
+      reason: rentAssistanceEstimate.reason,
+      nextSteps: rentAssistanceDef.nextSteps,
+      learnMoreUrl: rentAssistanceDef.learnMoreUrl,
+    })
+  }
+
+  // Process other benefits (excluding Youth Allowance and Rent Assistance)
   const otherBenefits = definitions
-    .filter(def => def.id !== "youth_allowance")
+    .filter(def => def.id !== "youth_allowance" && def.id !== "rent_assistance")
     .map((def) => {
       const { eligible, reason } = evaluateBenefitEligibility(def, userData)
       return {
@@ -263,7 +446,7 @@ function checkBenefitsEligibility(userData: any) {
         learnMoreUrl: def.learnMoreUrl,
       }
     })
-  
+
   return [...benefits, ...otherBenefits]
 }
 

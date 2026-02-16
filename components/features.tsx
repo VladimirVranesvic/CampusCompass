@@ -2,9 +2,9 @@ import Image from "next/image"
 
 const features = [
   {
-    title: "Personalized checklist",
+    title: "Checklists",
     description:
-      "Get a custom checklist for every step—UAC deadlines, open days, and more—so nothing slips through the cracks.",
+      "Get an actionable checklist—UAC deadlines, subsidies, and more—so nothing slips through the cracks.",
     image: "/images/checklist-desk.jpg",
     imageAlt: "Organized desk with laptop and stationery",
     bgColor: "bg-sky-100",
@@ -29,9 +29,9 @@ const features = [
     size: "large",
   },
   {
-    title: "Benefits & scholarships guide",
+    title: "Benefits and Course Information",
     description:
-      "Find out which support, benefits, and scholarships you can access—no more missing out.",
+      "Find out which support, benefits, and details around your preferred courses — no more missing out.",
     image: "/images/students-meeting.jpg",
     imageAlt: "Students having a meeting at a table",
     bgColor: "bg-amber-100",
@@ -41,7 +41,7 @@ const features = [
 
 export function Features() {
   return (
-    <section className="bg-background py-16 md:py-24">
+    <section id="about" className="bg-background py-16 md:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h2 className="text-balance text-4xl font-bold tracking-tight md:text-5xl">

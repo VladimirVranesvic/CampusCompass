@@ -1,6 +1,6 @@
 const stats = [
   {
-    value: "12+",
+    value: "10+",
     label: "NSW universities",
     sublabel: "All major campuses covered",
   },

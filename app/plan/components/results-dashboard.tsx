@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { ArrowLeft, Download, Save, Loader2 } from "lucide-react"
+import { ArrowLeft, Save, Loader2 } from "lucide-react"
 import { UACTimeline } from "./uac-timeline"
 import { CommutePlanner } from "./commute-planner"
 import { RentEstimator } from "./rent-estimator"
@@ -127,10 +127,6 @@ export function ResultsDashboard({
                   Update plan
                 </Button>
               )}
-              <Button variant="outline">
-                <Download className="mr-2 h-4 w-4" />
-                Export
-              </Button>
             </div>
           </div>
         </div>
