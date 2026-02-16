@@ -4,7 +4,8 @@ import { useState, useMemo, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
-import { Home, MapPin, BedDouble, Loader2 } from "lucide-react"
+import { Home, MapPin, BedDouble, Loader2, ExternalLink, Building2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
 type RentByType = { apartment: number; house: number; townhouse: number }
@@ -26,6 +27,21 @@ interface RentEstimatorProps {
   }
   userData: any
 }
+
+/** Display name, URL, and the exact string used in user form targetUniversities (for filtering). */
+const ON_CAMPUS_ACCOMMODATION_LINKS = [
+  { name: "University of Sydney", url: "https://www.sydney.edu.au/study/accommodation.html", targetUniversityName: "University of Sydney" },
+  { name: "UNSW", url: "https://www.unsw.edu.au/accommodation", targetUniversityName: "UNSW Sydney" },
+  { name: "UTS", url: "https://www.uts.edu.au/for-students/current-students/support/uts-housing-service", targetUniversityName: "University of Technology Sydney" },
+  { name: "Macquarie University", url: "https://students.mq.edu.au/uni-life/accommodation", targetUniversityName: "Macquarie University" },
+  { name: "Australian Catholic University", url: "https://www.acu.edu.au/student-life/student-accommodation", targetUniversityName: "Australian Catholic University" },
+  { name: "Western Sydney University", url: "https://www.westernsydney.edu.au/accommodation", targetUniversityName: "Western Sydney University" },
+  { name: "University of Wollongong", url: "https://www.uow.edu.au/study/accommodation/", targetUniversityName: "University of Wollongong" },
+  { name: "University of Newcastle", url: "https://www.newcastle.edu.au/campus-life/accommodation", targetUniversityName: "University of Newcastle" },
+  { name: "Charles Sturt University", url: "https://www.csu.edu.au/current-students/uni-life/accommodation", targetUniversityName: "Charles Sturt University" },
+  { name: "Southern Cross University", url: "https://www.scu.edu.au/current-students/services-and-support/accommodation/", targetUniversityName: "Southern Cross University" },
+  { name: "University of New England", url: "https://www.une.edu.au/campus-life/une-accommodation", targetUniversityName: "University of New England" },
+] as const
 
 const BEDROOM_OPTIONS = [
   { value: "all", label: "All bedrooms" },
@@ -104,6 +120,20 @@ export function RentEstimator({ rentalData, userData }: RentEstimatorProps) {
       ].filter((d) => d.rent > 0),
     [displayedRent]
   )
+
+  const selectedUniversityLinks = useMemo(() => {
+    const selected = (userData?.targetUniversities as string[] | undefined) ?? []
+    if (selected.length === 0) return []
+    const byName = Object.fromEntries(
+      ON_CAMPUS_ACCOMMODATION_LINKS.map((link) => [link.targetUniversityName, link])
+    )
+    return selected
+      .map((name) => byName[name])
+      .filter((link): link is (typeof ON_CAMPUS_ACCOMMODATION_LINKS)[number] => Boolean(link))
+  }, [userData?.targetUniversities])
+
+  const ordinal = (n: number) =>
+    n === 1 ? "1st" : n === 2 ? "2nd" : n === 3 ? "3rd" : `${n}th`
 
   return (
     <Card>
@@ -272,6 +302,39 @@ export function RentEstimator({ rentalData, userData }: RentEstimatorProps) {
                 </div>
               )
             })}
+          </div>
+        </div>
+
+        {/* On-campus accommodation links — only for selected universities */}
+        <div className="pt-2 border-t">
+          <h3 className="font-semibold mb-2 flex items-center gap-2">
+            <Building2 className="h-4 w-4 text-muted-foreground" />
+            On-campus accommodation
+          </h3>
+          <p className="text-sm text-muted-foreground mb-3">
+            {selectedUniversityLinks.length > 0
+              ? "Compare options and apply via each university’s accommodation page."
+              : "Select universities in your plan to see their on-campus accommodation links."}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {selectedUniversityLinks.map((uni, index) => (
+              <div key={uni.name} className="flex items-center gap-2">
+                <span className="text-sm font-medium text-muted-foreground shrink-0">
+                  {ordinal(index + 1)}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-left justify-start gap-1.5"
+                  asChild
+                >
+                  <a href={uni.url} target="_blank" rel="noopener noreferrer">
+                    {uni.name}
+                    <ExternalLink className="h-3 w-3 shrink-0 opacity-70" />
+                  </a>
+                </Button>
+              </div>
+            ))}
           </div>
         </div>
       </CardContent>

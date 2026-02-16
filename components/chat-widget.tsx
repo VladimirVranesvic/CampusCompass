@@ -79,30 +79,40 @@ export function ChatWidget() {
 
   return (
     <>
-      {/* Floating button */}
-      <Button
-        type="button"
-        onClick={() => setIsOpen((o) => !o)}
-        className="fixed bottom-6 right-6 z-50 size-14 rounded-full shadow-lg bg-lime text-foreground hover:bg-lime/90"
-        aria-label={isOpen ? "Close chat" : "Open chat"}
-      >
-        {isOpen ? (
-          <X className="size-6" />
-        ) : (
+      {/* Floating open button - only when chat is closed */}
+      {!isOpen && (
+        <Button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          className="fixed bottom-6 right-6 z-50 size-14 rounded-full shadow-lg bg-lime text-foreground hover:bg-lime/90"
+          aria-label="Open chat"
+        >
           <MessageCircle className="size-6" />
-        )}
-      </Button>
+        </Button>
+      )}
 
       {/* Chat panel */}
       {isOpen && (
         <div
-          className="fixed bottom-24 right-6 z-50 flex h-[500px] max-h-[70vh] w-[380px] max-w-[calc(100vw-3rem)] flex-col rounded-xl border bg-card shadow-xl"
+          className="fixed bottom-6 right-6 z-50 flex h-[500px] max-h-[70vh] w-[380px] max-w-[calc(100vw-3rem)] flex-col rounded-xl border bg-card shadow-xl"
         >
-          <div className="shrink-0 border-b px-4 py-3">
-            <h3 className="font-semibold">Ask about your plan</h3>
-            <p className="text-xs text-muted-foreground">
-              UAC, fees, benefits, unis & more
-            </p>
+          <div className="flex shrink-0 items-start justify-between gap-2 border-b px-4 py-3">
+            <div>
+              <h3 className="font-semibold">Ask about your plan</h3>
+              <p className="text-xs text-muted-foreground">
+                UAC, fees, benefits, unis & more
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsOpen(false)}
+              className="shrink-0 rounded-full border border-lime text-foreground hover:bg-lime/20 hover:text-foreground"
+              aria-label="Close chat"
+            >
+              <X className="size-5" />
+            </Button>
           </div>
 
           <ScrollArea className="min-h-0 flex-1">

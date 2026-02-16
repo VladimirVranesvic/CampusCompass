@@ -1,13 +1,11 @@
 "use client"
 
-import Link from "next/link"
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
-import { Button } from "@/components/ui/button"
 import { Calendar, ListTodo, MapPin, Home, HelpCircle, Calculator } from "lucide-react"
 
 const tools = [
@@ -22,7 +20,6 @@ const tools = [
       "Track tasks completed",
       "Stay on top of applications",
     ],
-    href: null as string | null,
   },
   {
     id: "timeline",
@@ -35,7 +32,6 @@ const tools = [
       "Offer round dates",
       "Key UAC dates in one place",
     ],
-    href: null as string | null,
   },
   {
     id: "commute",
@@ -48,7 +44,6 @@ const tools = [
       "Travel time and cost per trip",
       "Route breakdown and transport options",
     ],
-    href: null as string | null,
   },
   {
     id: "rent",
@@ -61,7 +56,6 @@ const tools = [
       "Filter by number of bedrooms",
       "Nearby suburbs with real names",
     ],
-    href: null as string | null,
   },
   {
     id: "benefits",
@@ -74,7 +68,6 @@ const tools = [
       "Rent Assistance estimate when paying rent",
       "Next steps and links to Services Australia",
     ],
-    href: null as string | null,
   },
   {
     id: "fees",
@@ -87,7 +80,6 @@ const tools = [
       "Course fee breakdown by university",
       "HECS-HELP and upfront payment info",
     ],
-    href: null as string | null,
   },
 ]
 
@@ -130,11 +122,6 @@ export function ToolsShowcase() {
                         </li>
                       ))}
                     </ul>
-                    {"href" in tool && tool.href && (
-                      <Button className="mt-4 bg-lime text-foreground hover:bg-lime-hover" asChild>
-                        <Link href={tool.href}>Try it</Link>
-                      </Button>
-                    )}
                   </div>
                 </AccordionContent>
               </AccordionItem>

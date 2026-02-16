@@ -63,26 +63,27 @@ export async function getPostcodeCoordinates(
   }
 }
 
+/** University campus postcodes (NSW) — shared with plan API and rental logic */
+export const UNIVERSITY_POSTCODE: Record<string, string> = {
+  'University of Sydney': '2006',
+  'UNSW Sydney': '2052',
+  'University of Technology Sydney': '2007',
+  'Macquarie University': '2109',
+  'Western Sydney University': '2751',
+  'University of Wollongong': '2522',
+  'University of Newcastle': '2308',
+  'Charles Sturt University': '2678',
+  'Southern Cross University': '2480',
+  'University of New England': '2351',
+  'Australian Catholic University': '2060',
+}
+
 /**
  * Get coordinates for a university
  */
 export async function getUniversityCoordinates(
   university: string
 ): Promise<PostcodeLocation | null> {
-  const universityMap: { [key: string]: string } = {
-    'University of Sydney': '2006',              // Camperdown/Darlington campus
-    'UNSW Sydney': '2052',                       // Kensington campus
-    'University of Technology Sydney': '2007',   // Ultimo campus
-    'Macquarie University': '2109',              // Macquarie Park
-    'Western Sydney University': '2751',         // Parramatta South campus
-    'University of Wollongong': '2522',          // Main Wollongong campus
-    'University of Newcastle': '2308',           // Callaghan campus
-    'Charles Sturt University': '2678',          // Wagga Wagga main campus
-    'Southern Cross University': '2480',         // Lismore campus
-    'University of New England': '2351',         // Armidale campus
-    'Australian Catholic University': '2060',  // North Sydney campus (NSW)
-  }
-
-  const postcode = universityMap[university]
+  const postcode = UNIVERSITY_POSTCODE[university]
   return postcode ? getPostcodeCoordinates(postcode) : null
 }

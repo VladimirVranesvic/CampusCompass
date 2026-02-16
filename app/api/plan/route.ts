@@ -11,21 +11,7 @@ import {
   type YouthAllowanceInput,
 } from "@/lib/data/youth-allowance-calculator"
 import { calculateRentAssistance } from "@/lib/data/rent-assistance-calculator"
-
-/** University campus postcodes (NSW) for rental data — same as geocoding. */
-const UNIVERSITY_POSTCODE: Record<string, string> = {
-  "University of Sydney": "2006",
-  "UNSW Sydney": "2052",
-  "University of Technology Sydney": "2007",
-  "Macquarie University": "2109",
-  "Western Sydney University": "2751",
-  "University of Wollongong": "2522",
-  "University of Newcastle": "2308",
-  "Charles Sturt University": "2678",
-  "Southern Cross University": "2480",
-  "University of New England": "2351",
-  "Australian Catholic University": "2060",
-}
+import { UNIVERSITY_POSTCODE } from "@/lib/data/geocoding"
 
 function getRentalPostcodeAndLabel(userData: any): { postcode: string; locationLabel?: string } {
   const currentDwelling = (userData?.postcode ?? "2000").toString().replace(/\D/g, "").padStart(4, "0")
@@ -571,8 +557,14 @@ function calculateFees(userData: any) {
   }
 }
 
-function generateChecklist(userData: any) {
-  const septemberRound2Deadline = "2025-08-21"
+/** Minimal UAC timeline shape needed for checklist due dates. */
+type UACTimelineForChecklist = { applicationDeadline?: string; offerRounds?: Array<{ applyBy: string }> }
+
+function generateChecklist(userData: any, uacTimeline?: UACTimelineForChecklist | null) {
+  const applicationDeadline =
+    uacTimeline?.applicationDeadline && uacTimeline.applicationDeadline.length > 0
+      ? uacTimeline.applicationDeadline
+      : null
 
   return [
     {
@@ -580,8 +572,8 @@ function generateChecklist(userData: any) {
       items: [
         { task: "Create UAC account", dueDate: null, completed: false },
         { task: "Research universities and courses", dueDate: null, completed: false },
-        { task: "Submit application by deadline", dueDate: null, completed: false },
-        { task: "Apply for Youth Allowance (if eligible)", dueDate: null, completed: false },
+        { task: "Submit application by deadline", dueDate: applicationDeadline, completed: false },
+        { task: "Apply for government Support (If eligible)", dueDate: null, completed: false },
         { task: "Accept offer and complete enrolment", dueDate: null, completed: false },
       ],
     },
@@ -592,16 +584,16 @@ export async function POST(request: NextRequest) {
   try {
     const userData = await request.json()
 
-    // Process all tools in parallel
+    // UAC timeline is needed for checklist due dates, so compute it first
+    const uacTimeline = generateUACTimelineFromCSV(userData)
+
     const [
-      uacTimeline,
       commuteData,
       rentalData,
       benefitsEligibility,
       feesEstimate,
       checklist,
     ] = await Promise.all([
-      Promise.resolve(generateUACTimelineFromCSV(userData)),
       calculateCommute(userData),
       (() => {
         const { postcode, locationLabel } = getRentalPostcodeAndLabel(userData)
@@ -609,7 +601,7 @@ export async function POST(request: NextRequest) {
       })(),
       Promise.resolve(checkBenefitsEligibility({ ...userData, movingForStudy: userData.livingSituation === 'moving_out' || userData.livingSituation === 'Renting/Moving out' })),
       Promise.resolve(calculateFees(userData)),
-      Promise.resolve(generateChecklist(userData)),
+      Promise.resolve(generateChecklist(userData, uacTimeline)),
     ])
 
     return NextResponse.json({
