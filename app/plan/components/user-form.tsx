@@ -92,12 +92,17 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
   const form = useForm<UserData>({
     resolver: zodResolver(userSchema),
     defaultValues: {
+      postcode: "",
+      age: "",
+      australianCitizenOrPR: "",
+      applicantType: "",
+      consideredIndependent: "",
       highestEducation: "",
-      australianCitizenOrPR: "yes",
-      consideredIndependent: "unsure",
-      applicantType: "year-11",
       targetUniversities: [],
       preferredFields: [],
+      livingSituation: "",
+      rentalBudget: "",
+      preferredLocationPostcode: "",
       householdIncome: "",
       personalIncomeFortnightly: "",
       significantAssets: "",
@@ -106,7 +111,8 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
       studyLoadFullTime: "",
       concessionalStudyLoad: "",
       isIndigenous: false,
-      preferredLocationPostcode: "",
+      commuteMaxTime: "",
+      budgetMax: "",
     },
   })
 
@@ -541,8 +547,8 @@ export function UserForm({ onSubmit, loading }: UserFormProps) {
               <div>
                 <Label htmlFor="livingSituation" className="font-bold">Living Situation *</Label>
                 <Select
+                  value={watch("livingSituation") ?? ""}
                   onValueChange={(value) => setValue("livingSituation", value)}
-                  defaultValue={watch("livingSituation")}
                 >
                   <SelectTrigger className="mt-2">
                     <SelectValue placeholder="Select your living situation" />
