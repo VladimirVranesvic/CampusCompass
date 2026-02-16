@@ -12,7 +12,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Menu, X, GraduationCap, ChevronDown, User as UserIcon, LogOut } from "lucide-react"
+import Image from "next/image"
+import { Menu, X, ChevronDown, User as UserIcon, LogOut } from "lucide-react"
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -44,9 +45,7 @@ export function Navbar() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-foreground">
-            <GraduationCap className="h-5 w-5 text-background" />
-          </div>
+          <Image src="/logo.png" alt="CampusCompass" width={32} height={32} className="h-8 w-8 object-contain" />
           <span className="text-lg font-semibold">CampusCompass</span>
         </Link>
 
